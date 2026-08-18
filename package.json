@@ -1,0 +1,19 @@
+{
+  "name": "ashashop",
+  "version": "1.0.0",
+  "description": "AshaShop - Fullstack E-Commerce Platform (React, NestJS, MongoDB, Redis, Docker)",
+  "scripts": {
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "seed": "cd backend && npm run seed",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": ["react", "nestjs", "mongodb", "redis", "ecommerce", "jwt", "docker"],
+  "author": "AshaShop Team",
+  "license": "MIT"
+}
