@@ -35,12 +35,12 @@ export const AdminLayout: React.FC = () => {
           {/* Logo */}
           <div className="p-6 border-b border-slate-800 flex items-center justify-between">
             <Link to="/admin" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-slate-950 font-black shadow-md">
+              <div className="w-9 h-9 rounded-lg bg-exclusive-red flex items-center justify-center text-white font-black shadow-md">
                 A
               </div>
               <div>
-                <h1 className="font-extrabold text-white text-lg tracking-tight">AshaShop</h1>
-                <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                <h1 className="font-extrabold text-white text-lg tracking-tight">Asha<span className="text-exclusive-red">Shop</span></h1>
+                <p className="text-[11px] text-red-400 font-semibold flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" /> Admin Portal
                 </p>
               </div>

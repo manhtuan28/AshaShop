@@ -20,11 +20,14 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-16 border-b border-neutral-800">
           
-          {/* Column 1: Exclusive / Subscribe */}
+          {/* Column 1: AshaShop / Subscribe */}
           <div className="space-y-4">
-            <Link to="/" className="inline-block">
-              <span className="text-2xl font-bold tracking-wider font-poppins">
-                Exclusive<span className="text-exclusive-red">.</span>
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-exclusive-red rounded-lg flex items-center justify-center text-white shadow-md">
+                <span className="font-bold text-lg">A</span>
+              </div>
+              <span className="text-2xl font-bold tracking-tight font-poppins text-white">
+                Asha<span className="text-exclusive-red">Shop</span>
               </span>
             </Link>
             <h4 className="font-medium text-lg text-neutral-200">Subscribe</h4>
