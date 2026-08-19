@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: any) => Promise<void>;
+  setAuth: (user: User, tokens: { accessToken: string; refreshToken: string }) => void;
   register: (userData: any) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -15,7 +16,6 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => {
-  // Khởi tạo từ localStorage
   const savedUser = localStorage.getItem('ashashop_user');
   const savedTokens = localStorage.getItem('ashashop_tokens');
 
@@ -37,6 +37,12 @@ export const useAuthStore = create<AuthState>((set, get) => {
         set({ isLoading: false });
         throw error;
       }
+    },
+
+    setAuth: (user: User, tokens: { accessToken: string; refreshToken: string }) => {
+      localStorage.setItem('ashashop_user', JSON.stringify(user));
+      localStorage.setItem('ashashop_tokens', JSON.stringify(tokens));
+      set({ user, tokens, isAuthenticated: true, isLoading: false });
     },
 
     register: async (userData) => {

@@ -1,150 +1,230 @@
 import React, { useState } from 'react';
-import { User, Phone, MapPin, KeyRound, Save, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { usersApi } from '../services/api';
-import toast from 'react-hot-toast';
+import { CheckCircle2 } from 'lucide-react';
 
 export const Profile: React.FC = () => {
   const { user, setUser } = useAuthStore();
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
+    email: user?.email || '',
     phone: user?.phone || '',
     address: user?.address || '',
-    avatar: user?.avatar || '',
-    password: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   });
 
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setMessage('');
+    setError('');
+
+    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+      setError('New passwords do not match!');
+      return;
+    }
+
     try {
-      const updatePayload: any = {
+      setLoading(true);
+      const payload: any = {
         name: formData.name,
         phone: formData.phone,
         address: formData.address,
-        avatar: formData.avatar,
       };
-      if (formData.password) {
-        updatePayload.password = formData.password;
-      }
 
-      const res = await usersApi.updateProfile(updatePayload);
-      setUser(res.data.data);
-      toast.success('Cập nhật thông tin thành công!');
-      setFormData((prev) => ({ ...prev, password: '' }));
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Không thể cập nhật hồ sơ');
+      const res = await usersApi.updateProfile(payload);
+      if (res.data.success) {
+        setUser(res.data.data);
+        setMessage('Profile updated successfully!');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update profile.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-          Hồ Sơ Cá Nhân
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Quản lý thông tin tài khoản và địa chỉ giao hàng của bạn
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 font-poppins space-y-10">
+      
+      {/* Breadcrumb & Welcome Greeting */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <nav className="flex items-center gap-2 text-sm text-gray-500">
+          <Link to="/" className="hover:text-black transition-colors">Home</Link>
+          <span>/</span>
+          <span className="text-black font-medium">My Account</span>
+        </nav>
+
+        <p className="text-sm font-medium text-black">
+          Welcome! <span className="text-exclusive-red font-semibold">{user?.name}</span>
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-10 border border-gray-100 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Avatar Preview */}
-          <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
-            <img
-              src={formData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'}
-              alt={formData.name}
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-emerald-500 shadow-md"
-            />
-            <div className="space-y-1">
-              <h3 className="font-bold text-lg text-gray-900">{user?.name}</h3>
-              <p className="text-xs text-gray-500">{user?.email}</p>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md uppercase">
-                <ShieldCheck className="w-3.5 h-3.5" /> {user?.role}
-              </span>
+      {/* Main Grid: Sidebar (Left) & Edit Profile Form (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        
+        {/* Left Sidebar Menu */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="space-y-4">
+            <h3 className="font-semibold text-base text-black">Manage My Account</h3>
+            <ul className="pl-6 space-y-2 text-sm">
+              <li>
+                <Link to="/profile" className="text-exclusive-red font-medium">My Profile</Link>
+              </li>
+              <li>
+                <span className="text-gray-500 hover:text-black cursor-pointer">Address Book</span>
+              </li>
+              <li>
+                <span className="text-gray-500 hover:text-black cursor-pointer">My Payment Options</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-semibold text-base text-black">My Orders</h3>
+            <ul className="pl-6 space-y-2 text-sm text-gray-500">
+              <li>
+                <Link to="/orders" className="hover:text-black transition-colors">My Orders / History</Link>
+              </li>
+              <li>
+                <Link to="/orders" className="hover:text-black transition-colors">My Returns</Link>
+              </li>
+              <li>
+                <Link to="/orders" className="hover:text-black transition-colors">My Cancellations</Link>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-semibold text-base text-black">My WishList</h3>
+            <ul className="pl-6 space-y-2 text-sm text-gray-500">
+              <li>
+                <Link to="/shop" className="hover:text-black transition-colors">Wishlist Items</Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Right Form: Edit Profile */}
+        <div className="lg:col-span-8 bg-white shadow-exclusive-sm border border-gray-100 rounded p-8 sm:p-10 space-y-6">
+          <h2 className="text-xl font-bold text-exclusive-red">Edit Your Profile</h2>
+
+          {message && (
+            <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded text-sm flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{message}</span>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-emerald-600" /> Họ và tên
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              />
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm text-gray-700 font-medium">First Name</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-exclusive-bg rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-gray-700 font-medium">Email Address</label>
+                <input
+                  type="email"
+                  disabled
+                  value={formData.email}
+                  className="w-full bg-gray-100 text-gray-500 rounded px-4 py-3 text-sm cursor-not-allowed"
+                />
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-emerald-600" /> Số điện thoại
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Chưa cập nhật"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm text-gray-700 font-medium">Phone Number</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full bg-exclusive-bg rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-gray-700 font-medium">Address</label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full bg-exclusive-bg rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-emerald-600" /> Địa chỉ giao hàng mặc định
-            </label>
-            <input
-              type="text"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="Nhập địa chỉ nhà riêng hoặc văn phòng"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
+            {/* Password Changes */}
+            <div className="space-y-4 pt-4 border-t border-gray-100">
+              <h3 className="font-semibold text-sm text-black">Password Changes</h3>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-700">Link ảnh đại diện (Avatar URL)</label>
-            <input
-              type="url"
-              value={formData.avatar}
-              onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
+              <div className="space-y-3">
+                <input
+                  type="password"
+                  placeholder="Current Password"
+                  value={formData.currentPassword}
+                  onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                  className="w-full bg-exclusive-bg rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                />
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={formData.newPassword}
+                  onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                  className="w-full bg-exclusive-bg rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                />
+                <input
+                  type="password"
+                  placeholder="Confirm New Password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="w-full bg-exclusive-bg rounded px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+            </div>
 
-          <div className="border-t border-gray-100 pt-6 space-y-1">
-            <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-emerald-600" /> Đổi mật khẩu mới (bỏ trống nếu không đổi)
-            </label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder="Nhập mật khẩu mới từ 6 ký tự..."
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
+            <div className="flex items-center justify-end gap-6 pt-4">
+              <button
+                type="button"
+                className="text-sm text-black hover:underline"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-10 py-3.5 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium text-sm rounded transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/25 transition flex items-center gap-2 disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" />
-            <span>{loading ? 'Đang lưu...' : 'Lưu Thay Đổi'}</span>
-          </button>
-        </form>
+          </form>
+        </div>
+
       </div>
+
     </div>
   );
 };

@@ -1,135 +1,151 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, Lock, Mail, ArrowRight, UserCheck, ShieldAlert } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
-import toast from 'react-hot-toast';
+import { authApi } from '../services/api';
+import { ShieldCheck, UserCheck } from 'lucide-react';
 
 export const Login: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login, isLoading } = useAuthStore();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const { login, setAuth } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const from = (location.state as any)?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error('Vui lòng nhập đầy đủ Email và Mật khẩu');
-      return;
-    }
+    setError('');
+    setLoading(true);
 
     try {
-      await login({ email, password });
-      toast.success('Đăng nhập thành công!');
-      navigate(from, { replace: true });
-    } catch (error: any) {
-      const msg = error.response?.data?.message || 'Email hoặc mật khẩu không chính xác';
-      toast.error(typeof msg === 'string' ? msg : 'Đăng nhập thất bại');
+      const res = await authApi.login({ email, password });
+      if (res.data.success) {
+        const { user, tokens } = res.data.data;
+        setAuth(user, tokens);
+        navigate(user.role === 'admin' ? '/admin' : from, { replace: true });
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleQuickLogin = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
+  const handleQuickDemo = (role: 'admin' | 'customer') => {
+    if (role === 'admin') {
+      setEmail('admin@ashashop.com');
+      setPassword('admin123456');
+    } else {
+      setEmail('customer@ashashop.com');
+      setPassword('customer123456');
+    }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full bg-white rounded-3xl p-8 sm:p-10 border border-gray-100 shadow-xl space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white mx-auto shadow-md shadow-emerald-500/20">
-            <ShoppingBag className="w-6 h-6" />
-          </div>
-          <h2 className="text-2xl font-extrabold text-gray-900">Đăng Nhập</h2>
-          <p className="text-xs text-gray-500">
-            Chào mừng bạn quay trở lại với AshaShop
-          </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-poppins">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center min-h-[550px]">
+        
+        {/* Left Side: Shopping Illustration Graphic */}
+        <div className="lg:col-span-7 bg-[#CBE4E8] rounded overflow-hidden flex items-center justify-center p-8 min-h-[400px] lg:min-h-[550px]">
+          <img
+            src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=800&q=80"
+            alt="Shopping with Exclusive"
+            className="max-h-[450px] w-full object-cover rounded shadow-lg"
+          />
         </div>
 
-        {/* Demo Quick Fill for Internship Presentation */}
-        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">
-            Tài khoản mẫu (Báo cáo thực tập):
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('customer@ashashop.com', 'customer123456')}
-              className="px-2.5 py-2 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-semibold border border-slate-200 transition flex items-center justify-center gap-1.5"
-            >
-              <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Khách hàng</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@ashashop.com', 'admin123456')}
-              className="px-2.5 py-2 bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-700 rounded-xl text-xs font-semibold border border-slate-200 transition flex items-center justify-center gap-1.5"
-            >
-              <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
-              <span>Quản trị viên</span>
-            </button>
+        {/* Right Side: Login Form */}
+        <div className="lg:col-span-5 max-w-md w-full mx-auto space-y-6">
+          
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold text-black tracking-wide">
+              Log in to Exclusive
+            </h1>
+            <p className="text-sm text-gray-600">Enter your details below</p>
           </div>
-        </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-700">Email</label>
-            <div className="relative">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            <div className="space-y-1">
               <input
                 type="email"
                 required
+                placeholder="Email or Phone Number"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full border-b border-gray-300 py-3 text-sm focus:outline-none focus:border-black transition-colors"
               />
-              <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-700">Mật khẩu</label>
-            <div className="relative">
+            <div className="space-y-1">
               <input
                 type="password"
                 required
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full border-b border-gray-300 py-3 text-sm focus:outline-none focus:border-black transition-colors"
               />
-              <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-10 py-3 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium text-sm rounded transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Logging in...' : 'Log In'}
+              </button>
+
+              <a href="#" className="text-sm text-exclusive-red hover:underline font-medium">
+                Forget Password?
+              </a>
+            </div>
+
+          </form>
+
+          {/* Quick Demo Login Box */}
+          <div className="pt-4 border-t border-gray-200 space-y-2">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Demo Login:</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('admin')}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 border border-red-200 bg-red-50 hover:bg-red-100 text-exclusive-red text-xs font-semibold rounded transition-colors"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Admin Demo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('customer')}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 border border-gray-300 hover:bg-gray-100 text-black text-xs font-semibold rounded transition-colors"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Customer Demo</span>
+              </button>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
-          >
-            {isLoading ? (
-              <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
-            ) : (
-              <>
-                <span>Đăng Nhập</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </form>
+          <div className="text-center text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-semibold text-black hover:text-exclusive-red underline underline-offset-2 ml-1">
+              Sign up
+            </Link>
+          </div>
 
-        {/* Footer Link */}
-        <div className="text-center text-xs text-gray-500 pt-2">
-          Chưa có tài khoản?{' '}
-          <Link to="/register" className="font-bold text-emerald-600 hover:underline">
-            Đăng ký tài khoản mới
-          </Link>
         </div>
+
       </div>
     </div>
   );

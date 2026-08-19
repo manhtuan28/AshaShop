@@ -1,153 +1,162 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Clock, CheckCircle2, XCircle, Truck, AlertCircle } from 'lucide-react';
+import { Package, ArrowLeft } from 'lucide-react';
 import { ordersApi } from '../services/api';
-import { Order, OrderStatus } from '../types';
-import { formatPrice } from '../components/common/ProductCard';
-import toast from 'react-hot-toast';
+import { Order } from '../types';
 
 export const OrderHistory: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const res = await ordersApi.getMyOrders();
-      setOrders(res.data.data || []);
-    } catch (error) {
-      console.error('Lỗi tải đơn hàng:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const res = await ordersApi.getMyOrders();
+        if (res.data.success) {
+          setOrders(res.data.data);
+        }
+      } catch (err) {
+        console.error('Lỗi khi tải danh sách đơn hàng:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchOrders();
   }, []);
 
-  const handleCancelOrder = async (orderId: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
-    try {
-      await ordersApi.cancel(orderId);
-      toast.success('Hủy đơn hàng thành công');
-      fetchOrders();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Không thể hủy đơn hàng');
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  };
+
+  const getStatusBadge = (status: string = 'PENDING') => {
+    const s = status.toUpperCase();
+    switch (s) {
+      case 'DELIVERED':
+        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs font-bold">Delivered</span>;
+      case 'SHIPPING':
+      case 'SHIPPED':
+        return <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold">Shipped</span>;
+      case 'CONFIRMED':
+      case 'PROCESSING':
+        return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-bold">Processing</span>;
+      case 'CANCELLED':
+        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded text-xs font-bold">Cancelled</span>;
+      default:
+        return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded text-xs font-bold">Pending</span>;
     }
   };
 
-  const getStatusBadge = (status: OrderStatus) => {
-    switch (status) {
-      case 'PENDING':
-        return <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-lg flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Chờ xử lý</span>;
-      case 'CONFIRMED':
-        return <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Đã xác nhận</span>;
-      case 'SHIPPING':
-        return <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> Đang giao hàng</span>;
-      case 'DELIVERED':
-        return <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Đã giao thành công</span>;
-      case 'CANCELLED':
-        return <span className="px-3 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-lg flex items-center gap-1"><XCircle className="w-3.5 h-3.5" /> Đã hủy</span>;
-      default:
-        return <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg">{status}</span>;
+  const handleCancelOrder = async (id: string) => {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+    try {
+      const res = await ordersApi.cancel(id);
+      if (res.data.success) {
+        setOrders(orders.map(o => o._id === id ? { ...o, orderStatus: 'CANCELLED' } : o));
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to cancel order.');
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-          Đơn Hàng Của Tôi
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Theo dõi và quản lý lịch sử mua hàng tại AshaShop
-        </p>
-      </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 font-poppins space-y-8">
+      
+      <nav className="flex items-center gap-2 text-sm text-gray-500">
+        <Link to="/" className="hover:text-black transition-colors">Home</Link>
+        <span>/</span>
+        <Link to="/profile" className="hover:text-black transition-colors">My Account</Link>
+        <span>/</span>
+        <span className="text-black font-medium">My Orders</span>
+      </nav>
+
+      <h1 className="text-3xl font-bold text-black tracking-wide">My Orders</h1>
 
       {loading ? (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-pulse">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-white rounded-2xl h-40 border border-gray-100" />
+            <div key={i} className="h-32 bg-gray-100 rounded"></div>
           ))}
         </div>
       ) : orders.length === 0 ? (
-        <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 space-y-4">
-          <Package className="w-16 h-16 text-gray-300 mx-auto" />
-          <h3 className="text-lg font-bold text-gray-800">Bạn chưa có đơn hàng nào</h3>
-          <p className="text-sm text-gray-500">
-            Các đơn hàng bạn đặt sẽ hiển thị danh sách tại đây.
-          </p>
+        <div className="text-center py-20 bg-exclusive-bg rounded p-8 space-y-4">
+          <Package className="w-16 h-16 text-gray-400 mx-auto" />
+          <h3 className="text-xl font-bold text-black">No Orders Placed Yet</h3>
+          <p className="text-sm text-gray-500">You haven't placed any orders with us yet.</p>
           <Link
             to="/shop"
-            className="inline-block px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition text-sm"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium rounded transition-colors"
           >
-            Mua sắm ngay
+            <ArrowLeft className="w-4 h-4" />
+            <span>Shop Now</span>
           </Link>
         </div>
       ) : (
         <div className="space-y-6">
-          {orders.map((order) => (
-            <div
-              key={order._id}
-              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-4">
-                <div className="space-y-1">
-                  <span className="text-xs font-mono font-bold text-gray-400">MÃ ĐƠN: #{order._id}</span>
-                  <p className="text-xs text-gray-500">
-                    Ngày đặt: {new Date(order.createdAt).toLocaleString('vi-VN')}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  {getStatusBadge(order.orderStatus)}
-                </div>
-              </div>
+          {orders.map((order) => {
+            const currentStatus = order.orderStatus || (order as any).status || 'PENDING';
+            const total = order.totalPrice || (order as any).totalAmount || 0;
 
-              {/* Items List */}
-              <div className="divide-y divide-gray-50">
-                {order.items.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 rounded-xl object-cover bg-gray-50"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-sm text-gray-900 truncate">{item.name}</h4>
-                      <p className="text-xs text-gray-500">Số lượng: x{item.quantity}</p>
+            return (
+              <div
+                key={order._id}
+                className="bg-white shadow-exclusive-sm border border-gray-100 rounded p-6 space-y-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-100 text-sm">
+                  <div>
+                    <span className="font-semibold text-black">Order ID: </span>
+                    <span className="font-mono text-gray-600 font-bold">#{order._id.slice(-8).toUpperCase()}</span>
+                  </div>
+                  <div className="text-gray-500 text-xs">
+                    {new Date(order.createdAt).toLocaleDateString('vi-VN')} {new Date(order.createdAt).toLocaleTimeString('vi-VN')}
+                  </div>
+                  <div>{getStatusBadge(currentStatus)}</div>
+                </div>
+
+                {/* Items in this order */}
+                <div className="space-y-3">
+                  {order.items.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={item.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=100&q=80'}
+                          alt={item.name}
+                          className="w-12 h-12 object-contain bg-exclusive-bg rounded p-1"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-black line-clamp-1">{item.name}</p>
+                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-semibold text-black">
+                        {formatCurrency(item.price * item.quantity)}
+                      </span>
                     </div>
-                    <span className="text-sm font-bold text-emerald-600">
-                      {formatPrice(item.price * item.quantity)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Footer */}
-              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-4">
-                <div className="text-xs text-gray-500">
-                  <span>Giao tới: <strong>{order.shippingAddress.fullName}</strong> ({order.shippingAddress.phone}) - {order.shippingAddress.address}, {order.shippingAddress.city}</span>
+                  ))}
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <span className="text-xs text-gray-500 block">Tổng tiền:</span>
-                    <span className="text-base font-black text-emerald-600">{formatPrice(order.totalPrice)}</span>
+
+                {/* Total and Cancel Option */}
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-100">
+                  <div className="text-sm">
+                    <span className="text-gray-600">Total Amount: </span>
+                    <span className="font-bold text-exclusive-red text-base">{formatCurrency(total)}</span>
                   </div>
-                  {order.orderStatus === 'PENDING' && (
+
+                  {(currentStatus.toUpperCase() === 'PENDING') && (
                     <button
                       onClick={() => handleCancelOrder(order._id)}
-                      className="px-4 py-2 border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold rounded-xl transition"
+                      className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 text-xs font-semibold rounded transition-colors"
                     >
-                      Hủy Đơn Hàng
+                      Cancel Order
                     </button>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
+
     </div>
   );
 };

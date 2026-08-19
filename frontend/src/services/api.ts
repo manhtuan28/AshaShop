@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { ApiResponse, Category, Order, PaginatedResult, Product, User } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+// Live production API hosted on VPS (HTTPS via Cloudflare)
+const LIVE_API_URL = 'https://aov.maitiendung.com/api/v1';
+
+export const API_BASE_URL = import.meta.env.VITE_API_URL || LIVE_API_URL;
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -32,7 +35,6 @@ api.interceptors.request.use(
 // Response Interceptor: Handle unwrap data or refresh token
 api.interceptors.response.use(
   (response) => {
-    // If wrapped in ApiResponse structure, return response.data
     return response;
   },
   async (error) => {
