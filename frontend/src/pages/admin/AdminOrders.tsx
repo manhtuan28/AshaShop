@@ -3,9 +3,12 @@ import { ordersApi } from '../../services/api';
 import { Order, OrderStatus } from '../../types';
 import { formatPrice } from '../../components/common/ProductCard';
 import { Clock, CheckCircle2, Truck, XCircle, Eye, X } from 'lucide-react';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { translateDynamic } from '../../i18n/translator';
 import toast from 'react-hot-toast';
 
 export const AdminOrders: React.FC = () => {
+  const { currentLanguage } = useLanguageStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
@@ -45,27 +48,31 @@ export const AdminOrders: React.FC = () => {
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case 'PENDING':
-        return <span className="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-lg flex items-center gap-1"><Clock className="w-3 h-3" /> Chờ xử lý</span>;
+        return <span className="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-lg flex items-center gap-1"><Clock className="w-3 h-3" /> {translateDynamic('Chờ Xử Lý', currentLanguage)}</span>;
       case 'CONFIRMED':
-        return <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Đã xác nhận</span>;
+        return <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {translateDynamic('Đã xác nhận', currentLanguage) || 'Confirmed'}</span>;
       case 'SHIPPING':
-        return <span className="px-2.5 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg flex items-center gap-1"><Truck className="w-3 h-3" /> Đang giao</span>;
+        return <span className="px-2.5 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg flex items-center gap-1"><Truck className="w-3 h-3" /> {translateDynamic('Đang giao hàng', currentLanguage) || 'Shipping'}</span>;
       case 'DELIVERED':
-        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Đã giao</span>;
+        return <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {translateDynamic('Đã Giao Thành Công', currentLanguage)}</span>;
       case 'CANCELLED':
-        return <span className="px-2.5 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-lg flex items-center gap-1"><XCircle className="w-3 h-3" /> Đã hủy</span>;
+        return <span className="px-2.5 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-lg flex items-center gap-1"><XCircle className="w-3 h-3" /> {translateDynamic('Đã hủy', currentLanguage) || 'Cancelled'}</span>;
       default:
         return <span>{status}</span>;
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-poppins">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Quản Lý Đơn Hàng</h1>
-          <p className="text-xs text-gray-500">Xem và cập nhật trạng thái đơn hàng của khách hàng</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            {translateDynamic('Quản Lý Đơn Hàng', currentLanguage)}
+          </h1>
+          <p className="text-xs text-slate-500">
+            {translateDynamic('Xem và cập nhật trạng thái đơn hàng của khách hàng', currentLanguage)}
+          </p>
         </div>
 
         {/* Status Filter */}
@@ -73,31 +80,31 @@ export const AdminOrders: React.FC = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none"
           >
-            <option value="">Tất cả trạng thái</option>
-            <option value="PENDING">Chờ xử lý (PENDING)</option>
-            <option value="CONFIRMED">Đã xác nhận (CONFIRMED)</option>
-            <option value="SHIPPING">Đang giao hàng (SHIPPING)</option>
-            <option value="DELIVERED">Đã giao thành công (DELIVERED)</option>
-            <option value="CANCELLED">Đã hủy (CANCELLED)</option>
+            <option value="">{translateDynamic('Tất cả trạng thái', currentLanguage) || 'All Statuses'}</option>
+            <option value="PENDING">{translateDynamic('Chờ Xử Lý', currentLanguage)} (PENDING)</option>
+            <option value="CONFIRMED">{translateDynamic('Đã xác nhận', currentLanguage) || 'Confirmed'} (CONFIRMED)</option>
+            <option value="SHIPPING">{translateDynamic('Đang giao hàng', currentLanguage) || 'Shipping'} (SHIPPING)</option>
+            <option value="DELIVERED">{translateDynamic('Đã Giao Thành Công', currentLanguage)} (DELIVERED)</option>
+            <option value="CANCELLED">{translateDynamic('Đã hủy', currentLanguage) || 'Cancelled'} (CANCELLED)</option>
           </select>
         </div>
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-bold border-b border-gray-100">
+            <thead className="bg-slate-50 text-slate-600 uppercase text-xs font-bold border-b border-slate-200">
               <tr>
-                <th className="p-4">Mã đơn</th>
-                <th className="p-4">Khách hàng</th>
-                <th className="p-4">Ngày đặt</th>
-                <th className="p-4">Tổng tiền</th>
-                <th className="p-4">Trạng thái</th>
-                <th className="p-4">Cập nhật nhanh</th>
-                <th className="p-4 text-right">Chi tiết</th>
+                <th className="p-4">{translateDynamic('Mã Đơn', currentLanguage)}</th>
+                <th className="p-4">{translateDynamic('Khách Hàng', currentLanguage)}</th>
+                <th className="p-4">{translateDynamic('Ngày Đặt', currentLanguage)}</th>
+                <th className="p-4">{translateDynamic('Tổng Tiền', currentLanguage)}</th>
+                <th className="p-4">{translateDynamic('Trạng Thái', currentLanguage)}</th>
+                <th className="p-4">{translateDynamic('Thao Tác', currentLanguage)}</th>
+                <th className="p-4 text-right">{translateDynamic('Chi tiết', currentLanguage) || 'Details'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

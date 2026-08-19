@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import { useLanguageStore } from '../store/useLanguageStore';
 import { authApi } from '../services/api';
 import { ShieldCheck, UserCheck } from 'lucide-react';
 
@@ -10,7 +11,8 @@ export const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, setAuth } = useAuthStore();
+  const { setAuth } = useAuthStore();
+  const { t } = useLanguageStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -63,9 +65,9 @@ export const Login: React.FC = () => {
           
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold text-black tracking-wide">
-              Log in to Exclusive
+              {t('auth.loginTitle')}
             </h1>
-            <p className="text-sm text-gray-600">Enter your details below</p>
+            <p className="text-sm text-gray-600">{t('auth.enterDetails')}</p>
           </div>
 
           {error && (
@@ -80,7 +82,7 @@ export const Login: React.FC = () => {
               <input
                 type="email"
                 required
-                placeholder="Email or Phone Number"
+                placeholder={t('auth.emailOrPhone')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border-b border-gray-300 py-3 text-sm focus:outline-none focus:border-black transition-colors"
@@ -91,7 +93,7 @@ export const Login: React.FC = () => {
               <input
                 type="password"
                 required
-                placeholder="Password"
+                placeholder={t('auth.password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full border-b border-gray-300 py-3 text-sm focus:outline-none focus:border-black transition-colors"
@@ -104,43 +106,45 @@ export const Login: React.FC = () => {
                 disabled={loading}
                 className="px-10 py-3 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium text-sm rounded transition-colors disabled:opacity-50"
               >
-                {loading ? 'Logging in...' : 'Log In'}
+                {loading ? '...' : t('auth.logInBtn')}
               </button>
 
               <a href="#" className="text-sm text-exclusive-red hover:underline font-medium">
-                Forget Password?
+                {t('auth.forgotPassword')}
               </a>
             </div>
 
           </form>
 
-          {/* Quick Demo Login Box */}
-          <div className="pt-4 border-t border-gray-200 space-y-2">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Demo Login:</p>
+
+
+          {/* Quick Demo Login Buttons */}
+          <div className="pt-2 border-t border-gray-100 space-y-2">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Đăng nhập nhanh mẫu (Demo)</p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => handleQuickDemo('admin')}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 border border-red-200 bg-red-50 hover:bg-red-100 text-exclusive-red text-xs font-semibold rounded transition-colors"
+                className="py-2 px-3 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm"
               >
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
                 <span>Admin Demo</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickDemo('customer')}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 border border-gray-300 hover:bg-gray-100 text-black text-xs font-semibold rounded transition-colors"
+                className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer border border-slate-200"
               >
-                <UserCheck className="w-4 h-4" />
-                <span>Customer Demo</span>
+                <UserCheck className="w-4 h-4 text-emerald-600" />
+                <span>Khách Hàng</span>
               </button>
             </div>
           </div>
 
           <div className="text-center text-sm text-gray-600">
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link to="/register" className="font-semibold text-black hover:text-exclusive-red underline underline-offset-2 ml-1">
-              Sign up
+              {t('auth.signUpLink')}
             </Link>
           </div>
 

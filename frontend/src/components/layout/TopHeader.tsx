@@ -1,61 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, Check, Globe } from 'lucide-react';
-
-interface LanguageOption {
-  code: string;
-  name: string;
-  nativeName: string;
-  flag: string;
-  bannerText: string;
-  shopNowText: string;
-}
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { useSiteConfigStore } from '../../store/useSiteConfigStore';
+import { SUPPORTED_LANGUAGES, LanguageCode } from '../../i18n/translations';
 
 export const TopHeader: React.FC = () => {
-  const languages: LanguageOption[] = [
-    {
-      code: 'vi',
-      name: 'Tiếng Việt',
-      nativeName: 'Tiếng Việt',
-      flag: '🇻🇳',
-      bannerText: 'Siêu Sale Mùa Hè Giảm Đến 50% & Miễn Phí Vận Chuyển Toàn Quốc!',
-      shopNowText: 'Mua Ngay',
-    },
-    {
-      code: 'en',
-      name: 'English',
-      nativeName: 'English',
-      flag: '🇺🇸',
-      bannerText: 'Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%!',
-      shopNowText: 'ShopNow',
-    },
-    {
-      code: 'zh',
-      name: 'Tiếng Trung',
-      nativeName: '中文 (简体)',
-      flag: '🇨🇳',
-      bannerText: '夏季泳装全场特惠 - 享五折优惠并免费极速配送！',
-      shopNowText: '立即选购',
-    },
-    {
-      code: 'ko',
-      name: 'Tiếng Hàn',
-      nativeName: '한국어',
-      flag: '🇰🇷',
-      bannerText: '여름 수영복 전 품목 50% 할인 및 무료 특급 배송!',
-      shopNowText: '지금 쇼핑하기',
-    },
-    {
-      code: 'ja',
-      name: 'Tiếng Nhật',
-      nativeName: '日本語',
-      flag: '🇯🇵',
-      bannerText: '夏の水着セール全品50%OFF＆無料速達配送キャンペーン！',
-      shopNowText: '今すぐ購入',
-    },
-  ];
-
-  const [selectedLang, setSelectedLang] = useState<LanguageOption>(languages[0]);
+  const { currentLanguage, languageInfo, setLanguage, t } = useLanguageStore();
+  const { getLocalizedConfig } = useSiteConfigStore();
+  const config = getLocalizedConfig(currentLanguage);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -70,18 +23,20 @@ export const TopHeader: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  if (!config.showTopBar) return null;
+
   return (
     <div className="bg-black text-white text-xs sm:text-sm py-2.5 px-4 relative z-50 font-poppins">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
         
         {/* Promotion Banner Text */}
         <div className="flex-1 text-center sm:text-center sm:pl-28 flex flex-wrap items-center justify-center gap-1.5">
-          <span>{selectedLang.bannerText}</span>
+          <span>{config.topBarText || t('top.banner')}</span>
           <Link 
-            to="/shop" 
+            to={config.topBarLink || '/shop'} 
             className="font-semibold underline hover:text-exclusive-red transition-colors ml-1"
           >
-            {selectedLang.shopNowText}
+            {config.topBarButtonText || t('top.shopNow')}
           </Link>
         </div>
 
@@ -92,8 +47,8 @@ export const TopHeader: React.FC = () => {
             className="flex items-center gap-1.5 cursor-pointer hover:text-gray-300 transition-colors px-2 py-1 rounded hover:bg-white/10 text-xs sm:text-sm"
             aria-label="Select Language"
           >
-            <span className="text-base leading-none">{selectedLang.flag}</span>
-            <span>{selectedLang.name}</span>
+            <span className="text-base leading-none">{languageInfo.flag}</span>
+            <span>{languageInfo.name}</span>
             <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
           </button>
 
@@ -106,13 +61,13 @@ export const TopHeader: React.FC = () => {
               </div>
 
               <div className="py-1">
-                {languages.map((lang) => {
-                  const isSelected = selectedLang.code === lang.code;
+                {SUPPORTED_LANGUAGES.map((lang) => {
+                  const isSelected = currentLanguage === lang.code;
                   return (
                     <button
                       key={lang.code}
                       onClick={() => {
-                        setSelectedLang(lang);
+                        setLanguage(lang.code as LanguageCode);
                         setIsOpen(false);
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2 text-left text-xs transition-colors ${

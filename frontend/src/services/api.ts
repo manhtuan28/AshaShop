@@ -1,10 +1,18 @@
 import axios from 'axios';
 import { ApiResponse, Category, Order, PaginatedResult, Product, User } from '../types';
 
-// Live production API hosted on VPS (HTTPS via Cloudflare)
-const LIVE_API_URL = 'https://aov.maitiendung.com/api/v1';
+// Dynamic API detection:
+// 1. If running on local machine (localhost / 127.0.0.1), connect to local backend container on port 5000
+// 2. If running in production (Vercel / Cloudflare), connect to VPS live API
+const isLocalhost = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname === '0.0.0.0'
+);
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || LIVE_API_URL;
+export const API_BASE_URL = isLocalhost
+  ? 'http://localhost:5000/api/v1'
+  : (import.meta.env.VITE_API_URL || 'https://aov.maitiendung.com/api/v1');
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -79,11 +87,14 @@ export const productsApi = {
   getById: (id: string) => api.get<ApiResponse<Product>>(`/products/${id}`),
   getCategories: () => api.get<ApiResponse<Category[]>>('/products/categories'),
   
-  // Admin APIs
+  // Admin Product APIs
   create: (data: any) => api.post<ApiResponse<Product>>('/products', data),
   update: (id: string, data: any) => api.patch<ApiResponse<Product>>(`/products/${id}`, data),
   delete: (id: string) => api.delete<ApiResponse<{ message: string }>>(`/products/${id}`),
+
+  // Admin Category APIs
   createCategory: (data: any) => api.post<ApiResponse<Category>>('/products/categories', data),
+  updateCategory: (id: string, data: any) => api.patch<ApiResponse<Category>>(`/products/categories/${id}`, data),
   deleteCategory: (id: string) => api.delete<ApiResponse<{ message: string }>>(`/products/categories/${id}`),
 };
 
@@ -101,7 +112,7 @@ export const ordersApi = {
   getById: (id: string) => api.get<ApiResponse<Order>>(`/orders/${id}`),
   cancel: (id: string) => api.patch<ApiResponse<Order>>(`/orders/${id}/cancel`),
   
-  // Admin APIs
+  // Admin Order APIs
   getAdminStats: () => api.get<ApiResponse<{ totalOrders: number; pendingOrders: number; deliveredOrders: number; totalRevenue: number; totalProducts: number }>>('/orders/admin/stats'),
   getAllAdmin: (params?: any) => api.get<ApiResponse<PaginatedResult<Order>>>('/orders/admin/all', { params }),
   updateStatus: (id: string, data: any) => api.patch<ApiResponse<Order>>(`/orders/${id}/status`, data),
@@ -110,4 +121,16 @@ export const ordersApi = {
 export const usersApi = {
   getProfile: () => api.get<ApiResponse<User>>('/users/profile'),
   updateProfile: (data: any) => api.patch<ApiResponse<User>>('/users/profile', data),
+  
+  // Admin User APIs
+  getAll: () => api.get<ApiResponse<User[]>>('/users'),
+  getById: (id: string) => api.get<ApiResponse<User>>(`/users/${id}`),
+  create: (data: any) => api.post<ApiResponse<User>>('/users', data),
+  update: (id: string, data: any) => api.patch<ApiResponse<User>>(`/users/${id}`, data),
+  delete: (id: string) => api.delete<ApiResponse<{ message: string }>>(`/users/${id}`),
+};
+
+export const settingsApi = {
+  getSettings: () => api.get<ApiResponse<any>>('/settings'),
+  updateSettings: (data: any) => api.put<ApiResponse<any>>('/settings', data),
 };

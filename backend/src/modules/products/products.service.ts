@@ -166,11 +166,23 @@ export class ProductsService {
 
     if (category) {
       if (Types.ObjectId.isValid(category)) {
-        filter.category = category;
+        const subCats = await this.categoryModel.find({ parentId: String(category) });
+        if (subCats.length > 0) {
+          const allCatIds = [category, ...subCats.map(s => s._id)];
+          filter.category = { $in: allCatIds };
+        } else {
+          filter.category = category;
+        }
       } else {
         const cat = await this.categoryModel.findOne({ slug: category });
         if (cat) {
-          filter.category = cat._id;
+          const subCats = await this.categoryModel.find({ parentId: String(cat._id) });
+          if (subCats.length > 0) {
+            const allCatIds = [cat._id, ...subCats.map(s => s._id)];
+            filter.category = { $in: allCatIds };
+          } else {
+            filter.category = cat._id;
+          }
         }
       }
     }
@@ -282,7 +294,13 @@ export class ProductsService {
   }
 
   async deleteProduct(id: string): Promise<{ message: string }> {
-    const deleted = await this.productModel.findByIdAndDelete(id);
+    let deleted = null;
+    if (Types.ObjectId.isValid(id)) {
+      deleted = await this.productModel.findByIdAndDelete(id);
+    }
+    if (!deleted) {
+      deleted = await this.productModel.findOneAndDelete({ slug: id });
+    }
     if (!deleted) {
       throw new NotFoundException('Không tìm thấy sản phẩm để xóa');
     }

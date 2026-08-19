@@ -21,6 +21,11 @@ export class CreateCategoryDto {
   @IsOptional()
   @IsString()
   image?: string;
+
+  @ApiPropertyOptional({ example: '65f8a9c1d2e3f4a5b6c7d8e9', description: 'ID danh mục cha (nếu là danh mục con)' })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class UpdateCategoryDto {
@@ -43,4 +48,9 @@ export class UpdateCategoryDto {
   @IsOptional()
   @IsString()
   image?: string;
+
+  @ApiPropertyOptional({ example: '65f8a9c1d2e3f4a5b6c7d8e9' })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }

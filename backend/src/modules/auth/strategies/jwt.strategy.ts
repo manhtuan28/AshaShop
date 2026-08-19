@@ -24,10 +24,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.usersService.findById(payload.sub);
-    if (!user) {
-      throw new UnauthorizedException('Token không hợp lệ hoặc tài khoản không tồn tại');
+    let user = null;
+    try {
+      user = await this.usersService.findById(payload.sub);
+    } catch (e) {
+      // If ID changed after db seed, fallback to email
+      if (payload.email) {
+        user = await this.usersService.findByEmail(payload.email);
+      }
     }
+
+    if (!user && payload.email) {
+      user = await this.usersService.findByEmail(payload.email);
+    }
+
+    if (!user) {
+      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn hoặc không tìm thấy tài khoản. Vui lòng đăng nhập lại.');
+    }
+
     return {
       _id: user._id.toString(),
       email: user.email,

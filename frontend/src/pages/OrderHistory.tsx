@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { Package, ArrowLeft } from 'lucide-react';
 import { ordersApi } from '../services/api';
 import { Order } from '../types';
+import { useLanguageStore } from '../store/useLanguageStore';
 
 export const OrderHistory: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguageStore();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -63,14 +65,14 @@ export const OrderHistory: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 font-poppins space-y-8">
       
       <nav className="flex items-center gap-2 text-sm text-gray-500">
-        <Link to="/" className="hover:text-black transition-colors">Home</Link>
+        <Link to="/" className="hover:text-black transition-colors">{t('nav.home')}</Link>
         <span>/</span>
-        <Link to="/profile" className="hover:text-black transition-colors">My Account</Link>
+        <Link to="/profile" className="hover:text-black transition-colors">{t('nav.manageAccount')}</Link>
         <span>/</span>
-        <span className="text-black font-medium">My Orders</span>
+        <span className="text-black font-medium">{t('orders.title')}</span>
       </nav>
 
-      <h1 className="text-3xl font-bold text-black tracking-wide">My Orders</h1>
+      <h1 className="text-3xl font-bold text-black tracking-wide">{t('orders.title')}</h1>
 
       {loading ? (
         <div className="space-y-4 animate-pulse">
@@ -88,7 +90,7 @@ export const OrderHistory: React.FC = () => {
             className="inline-flex items-center gap-2 px-8 py-3 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium rounded transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Shop Now</span>
+            <span>{t('cart.returnToShop')}</span>
           </Link>
         </div>
       ) : (
@@ -104,7 +106,7 @@ export const OrderHistory: React.FC = () => {
               >
                 <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-100 text-sm">
                   <div>
-                    <span className="font-semibold text-black">Order ID: </span>
+                    <span className="font-semibold text-black">{t('orders.orderId')}: </span>
                     <span className="font-mono text-gray-600 font-bold">#{order._id.slice(-8).toUpperCase()}</span>
                   </div>
                   <div className="text-gray-500 text-xs">
@@ -125,7 +127,7 @@ export const OrderHistory: React.FC = () => {
                         />
                         <div>
                           <p className="text-sm font-medium text-black line-clamp-1">{item.name}</p>
-                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                          <p className="text-xs text-gray-500">{t('cart.quantity')}: {item.quantity}</p>
                         </div>
                       </div>
                       <span className="text-sm font-semibold text-black">
@@ -138,7 +140,7 @@ export const OrderHistory: React.FC = () => {
                 {/* Total and Cancel Option */}
                 <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-100">
                   <div className="text-sm">
-                    <span className="text-gray-600">Total Amount: </span>
+                    <span className="text-gray-600">{t('orders.totalAmount')}: </span>
                     <span className="font-bold text-exclusive-red text-base">{formatCurrency(total)}</span>
                   </div>
 
@@ -147,7 +149,7 @@ export const OrderHistory: React.FC = () => {
                       onClick={() => handleCancelOrder(order._id)}
                       className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 text-xs font-semibold rounded transition-colors"
                     >
-                      Cancel Order
+                      {t('orders.cancelOrder')}
                     </button>
                   )}
                 </div>

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, ShoppingBag, ArrowLeft, X } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, X } from 'lucide-react';
 import { useCartStore } from '../store/useCartStore';
+import { useLanguageStore } from '../store/useLanguageStore';
 
 export const Cart: React.FC = () => {
-  const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCartStore();
+  const { items, updateQuantity, removeItem, totalPrice } = useCartStore();
+  const { t } = useLanguageStore();
   const navigate = useNavigate();
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
@@ -33,16 +35,16 @@ export const Cart: React.FC = () => {
         <div className="w-20 h-20 bg-exclusive-bg rounded-full flex items-center justify-center mx-auto text-gray-400">
           <ShoppingBag className="w-10 h-10" />
         </div>
-        <h2 className="text-2xl font-bold text-black">Your Cart is Empty</h2>
+        <h2 className="text-2xl font-bold text-black">{t('cart.empty')}</h2>
         <p className="text-sm text-gray-500 max-w-sm mx-auto">
-          Explore our collection and add your favorite items to the shopping cart.
+          {t('cart.emptyDesc')}
         </p>
         <Link
           to="/shop"
           className="inline-flex items-center gap-2 px-8 py-3 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium rounded transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Continue Shopping</span>
+          <span>{t('cart.returnToShop')}</span>
         </Link>
       </div>
     );
@@ -53,9 +55,9 @@ export const Cart: React.FC = () => {
       
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500">
-        <Link to="/" className="hover:text-black transition-colors">Home</Link>
+        <Link to="/" className="hover:text-black transition-colors">{t('nav.home')}</Link>
         <span>/</span>
-        <span className="text-black font-medium">Cart</span>
+        <span className="text-black font-medium">{t('cart.title')}</span>
       </nav>
 
       {/* Cart Table */}
@@ -63,10 +65,10 @@ export const Cart: React.FC = () => {
         
         {/* Table Header Card */}
         <div className="bg-white shadow-exclusive-sm border border-gray-100 rounded px-6 py-4 grid grid-cols-12 text-sm font-semibold text-black hidden sm:grid">
-          <span className="col-span-5">Product</span>
-          <span className="col-span-2 text-center">Price</span>
-          <span className="col-span-3 text-center">Quantity</span>
-          <span className="col-span-2 text-right">Subtotal</span>
+          <span className="col-span-5">{t('cart.product')}</span>
+          <span className="col-span-2 text-center">{t('cart.price')}</span>
+          <span className="col-span-3 text-center">{t('cart.quantity')}</span>
+          <span className="col-span-2 text-right">{t('cart.subtotal')}</span>
         </div>
 
         {/* Cart Item Rows */}
@@ -109,7 +111,7 @@ export const Cart: React.FC = () => {
 
                 {/* Price Column */}
                 <div className="col-span-2 text-center text-sm font-medium w-full sm:w-auto flex sm:block justify-between">
-                  <span className="sm:hidden text-gray-500">Price:</span>
+                  <span className="sm:hidden text-gray-500">{t('cart.price')}:</span>
                   <span>{formatCurrency(item.product.price)}</span>
                 </div>
 
@@ -136,7 +138,7 @@ export const Cart: React.FC = () => {
 
                 {/* Subtotal Column */}
                 <div className="col-span-2 text-right text-sm font-semibold text-black w-full sm:w-auto flex sm:block justify-between">
-                  <span className="sm:hidden text-gray-500">Subtotal:</span>
+                  <span className="sm:hidden text-gray-500">{t('cart.subtotal')}:</span>
                   <span>{formatCurrency(itemSubtotal)}</span>
                 </div>
 
@@ -151,13 +153,13 @@ export const Cart: React.FC = () => {
             to="/shop"
             className="w-full sm:w-auto px-8 py-3 border border-black hover:bg-black hover:text-white font-medium text-sm rounded transition-colors text-center"
           >
-            Return To Shop
+            {t('cart.returnToShop')}
           </Link>
           <button
             onClick={() => window.location.reload()}
             className="w-full sm:w-auto px-8 py-3 border border-black hover:bg-black hover:text-white font-medium text-sm rounded transition-colors"
           >
-            Update Cart
+            {t('cart.updateCart')}
           </button>
         </div>
 
@@ -171,7 +173,7 @@ export const Cart: React.FC = () => {
           <form onSubmit={handleApplyCoupon} className="flex flex-col sm:flex-row gap-4">
             <input
               type="text"
-              placeholder="Coupon Code (e.g. EXCLUSIVE10)"
+              placeholder={t('cart.couponPlaceholder')}
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value)}
               className="border border-black rounded px-6 py-3 text-sm focus:outline-none flex-1"
@@ -180,7 +182,7 @@ export const Cart: React.FC = () => {
               type="submit"
               className="px-8 py-3 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium text-sm rounded transition-colors flex-shrink-0"
             >
-              Apply Coupon
+              {t('cart.applyCoupon')}
             </button>
           </form>
           {couponApplied && (
@@ -192,28 +194,28 @@ export const Cart: React.FC = () => {
 
         {/* Right Cart Total Box */}
         <div className="lg:col-span-6 border-2 border-black rounded p-6 sm:p-8 space-y-4">
-          <h3 className="font-bold text-lg text-black">Cart Total</h3>
+          <h3 className="font-bold text-lg text-black">{t('cart.cartTotal')}</h3>
           
           <div className="space-y-3 divide-y divide-gray-200 text-sm">
             <div className="flex items-center justify-between pt-2">
-              <span className="text-gray-600">Subtotal:</span>
+              <span className="text-gray-600">{t('cart.subtotal')}:</span>
               <span className="font-semibold text-black">{formatCurrency(totalPrice)}</span>
             </div>
 
             {couponApplied && (
               <div className="flex items-center justify-between pt-2 text-exclusive-red">
-                <span>Discount:</span>
+                <span>{t('cart.discount')}</span>
                 <span className="font-semibold">-{formatCurrency(discountAmount)}</span>
               </div>
             )}
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-gray-600">Shipping:</span>
-              <span className="font-semibold text-exclusive-green">Free</span>
+              <span className="text-gray-600">{t('cart.shipping')}</span>
+              <span className="font-semibold text-exclusive-green">{t('cart.shippingFree')}</span>
             </div>
 
             <div className="flex items-center justify-between pt-3 text-base">
-              <span className="font-bold text-black">Total:</span>
+              <span className="font-bold text-black">{t('cart.total')}</span>
               <span className="font-bold text-exclusive-red text-lg">{formatCurrency(finalTotal)}</span>
             </div>
           </div>
@@ -223,7 +225,7 @@ export const Cart: React.FC = () => {
               onClick={() => navigate('/checkout')}
               className="w-full py-3.5 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium text-sm rounded transition-colors"
             >
-              Proceed to checkout
+              {t('cart.proceedCheckout')}
             </button>
           </div>
         </div>

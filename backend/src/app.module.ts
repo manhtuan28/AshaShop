@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ProductsModule } from './modules/products/products.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     ProductsModule,
     CartModule,
     OrdersModule,
+    SettingsModule,
   ],
   providers: [
     {

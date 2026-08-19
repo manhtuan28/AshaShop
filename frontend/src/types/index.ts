@@ -15,6 +15,8 @@ export interface Category {
   slug: string;
   description?: string;
   image?: string;
+  parentId?: string | null;
+  subcategories?: Category[];
   createdAt?: string;
 }
 

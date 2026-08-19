@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CreditCard, CheckCircle2, ShieldCheck, Truck } from 'lucide-react';
+import { Truck } from 'lucide-react';
 import { useCartStore } from '../store/useCartStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useLanguageStore } from '../store/useLanguageStore';
 import { ordersApi } from '../services/api';
 
 export const Checkout: React.FC = () => {
   const { items, totalPrice, clearCart } = useCartStore();
   const { user } = useAuthStore();
+  const { t } = useLanguageStore();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -59,20 +61,17 @@ export const Checkout: React.FC = () => {
           name: i.product.name,
           price: i.product.price,
           quantity: i.quantity,
-          image: i.product.images?.[0] || '',
-          attributes: i.selectedAttributes || {}
+          image: i.product.images?.[0],
+          selectedAttributes: i.selectedAttributes,
         })),
         shippingAddress: {
           fullName: formData.firstName,
           phone: formData.phone,
-          addressLine: `${formData.apartment ? formData.apartment + ', ' : ''}${formData.streetAddress}`,
+          address: `${formData.streetAddress} ${formData.apartment ? ', ' + formData.apartment : ''}`,
           city: formData.city,
         },
-        paymentMethod: paymentMethod,
-        subtotal: totalPrice,
-        discount: discountAmount,
-        shippingFee: 0,
-        totalAmount: finalTotal,
+        paymentMethod: paymentMethod === 'bank' ? 'BANK_TRANSFER' : 'COD',
+        totalPrice: finalTotal,
       };
 
       const res = await ordersApi.create(orderPayload);
@@ -87,32 +86,21 @@ export const Checkout: React.FC = () => {
     }
   };
 
-  if (items.length === 0) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center font-poppins space-y-4">
-        <h2 className="text-2xl font-bold">Your cart is empty</h2>
-        <Link to="/shop" className="inline-block px-6 py-2.5 bg-exclusive-red text-white rounded">
-          Return to Shop
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 font-poppins space-y-10">
       
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500">
-        <Link to="/" className="hover:text-black transition-colors">Account</Link>
+        <Link to="/" className="hover:text-black transition-colors">{t('nav.home')}</Link>
         <span>/</span>
-        <Link to="/profile" className="hover:text-black transition-colors">My Account</Link>
+        <Link to="/profile" className="hover:text-black transition-colors">{t('nav.manageAccount')}</Link>
         <span>/</span>
-        <Link to="/cart" className="hover:text-black transition-colors">View Cart</Link>
+        <Link to="/cart" className="hover:text-black transition-colors">{t('cart.title')}</Link>
         <span>/</span>
-        <span className="text-black font-medium">CheckOut</span>
+        <span className="text-black font-medium">{t('checkout.title')}</span>
       </nav>
 
-      <h1 className="text-3xl font-bold text-black tracking-wide">Billing Details</h1>
+      <h1 className="text-3xl font-bold text-black tracking-wide">{t('checkout.title')}</h1>
 
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded text-sm">
@@ -128,7 +116,7 @@ export const Checkout: React.FC = () => {
           
           <div className="space-y-2">
             <label className="text-sm text-gray-600 font-medium">
-              First Name<span className="text-exclusive-red">*</span>
+              {t('checkout.firstName')}<span className="text-exclusive-red">*</span>
             </label>
             <input
               type="text"
@@ -140,7 +128,7 @@ export const Checkout: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 font-medium">Company Name</label>
+            <label className="text-sm text-gray-600 font-medium">{t('checkout.companyName')}</label>
             <input
               type="text"
               value={formData.companyName}
@@ -151,7 +139,7 @@ export const Checkout: React.FC = () => {
 
           <div className="space-y-2">
             <label className="text-sm text-gray-600 font-medium">
-              Street Address<span className="text-exclusive-red">*</span>
+              {t('checkout.streetAddress')}<span className="text-exclusive-red">*</span>
             </label>
             <input
               type="text"
@@ -164,7 +152,7 @@ export const Checkout: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 font-medium">Apartment, floor, etc. (optional)</label>
+            <label className="text-sm text-gray-600 font-medium">{t('checkout.apartment')}</label>
             <input
               type="text"
               value={formData.apartment}
@@ -175,7 +163,7 @@ export const Checkout: React.FC = () => {
 
           <div className="space-y-2">
             <label className="text-sm text-gray-600 font-medium">
-              Town/City<span className="text-exclusive-red">*</span>
+              {t('checkout.city')}<span className="text-exclusive-red">*</span>
             </label>
             <input
               type="text"
@@ -188,7 +176,7 @@ export const Checkout: React.FC = () => {
 
           <div className="space-y-2">
             <label className="text-sm text-gray-600 font-medium">
-              Phone Number<span className="text-exclusive-red">*</span>
+              {t('checkout.phone')}<span className="text-exclusive-red">*</span>
             </label>
             <input
               type="tel"
@@ -201,7 +189,7 @@ export const Checkout: React.FC = () => {
 
           <div className="space-y-2">
             <label className="text-sm text-gray-600 font-medium">
-              Email Address<span className="text-exclusive-red">*</span>
+              {t('checkout.email')}<span className="text-exclusive-red">*</span>
             </label>
             <input
               type="email"
@@ -222,7 +210,7 @@ export const Checkout: React.FC = () => {
               className="w-4 h-4 accent-exclusive-red rounded cursor-pointer"
             />
             <label htmlFor="saveInfo" className="text-sm text-black cursor-pointer">
-              Save this information for faster check-out next time
+              {t('checkout.saveInfo')}
             </label>
           </div>
 
@@ -255,24 +243,24 @@ export const Checkout: React.FC = () => {
           {/* Calculations Summary */}
           <div className="space-y-3 divide-y divide-gray-200 text-sm">
             <div className="flex items-center justify-between pt-2">
-              <span className="text-gray-600">Subtotal:</span>
+              <span className="text-gray-600">{t('cart.subtotal')}:</span>
               <span className="font-semibold text-black">{formatCurrency(totalPrice)}</span>
             </div>
 
             {discountAmount > 0 && (
               <div className="flex items-center justify-between pt-2 text-exclusive-red">
-                <span>Discount:</span>
+                <span>{t('cart.discount')}</span>
                 <span className="font-semibold">-{formatCurrency(discountAmount)}</span>
               </div>
             )}
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-gray-600">Shipping:</span>
-              <span className="font-semibold text-exclusive-green">Free</span>
+              <span className="text-gray-600">{t('cart.shipping')}</span>
+              <span className="font-semibold text-exclusive-green">{t('cart.shippingFree')}</span>
             </div>
 
             <div className="flex items-center justify-between pt-3 text-base">
-              <span className="font-bold text-black">Total:</span>
+              <span className="font-bold text-black">{t('cart.total')}</span>
               <span className="font-bold text-exclusive-red text-xl">{formatCurrency(finalTotal)}</span>
             </div>
           </div>
@@ -295,13 +283,12 @@ export const Checkout: React.FC = () => {
                   className="w-4 h-4 accent-black cursor-pointer"
                 />
                 <label htmlFor="bank" className="text-sm font-medium text-black cursor-pointer">
-                  Bank / Credit Card
+                  {t('checkout.bankTransfer')}
                 </label>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold px-2 py-0.5 bg-blue-100 text-blue-800 rounded">VISA</span>
                 <span className="text-xs font-bold px-2 py-0.5 bg-red-100 text-red-800 rounded">Mastercard</span>
-                <span className="text-xs font-bold px-2 py-0.5 bg-pink-100 text-pink-800 rounded">bKash</span>
               </div>
             </div>
 
@@ -320,7 +307,7 @@ export const Checkout: React.FC = () => {
                   className="w-4 h-4 accent-black cursor-pointer"
                 />
                 <label htmlFor="cod" className="text-sm font-medium text-black cursor-pointer">
-                  Cash on delivery
+                  {t('checkout.cod')}
                 </label>
               </div>
               <Truck className="w-5 h-5 text-gray-500" />
@@ -332,7 +319,7 @@ export const Checkout: React.FC = () => {
           <div className="flex gap-4">
             <input
               type="text"
-              placeholder="Coupon Code"
+              placeholder={t('cart.couponPlaceholder')}
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value)}
               className="border border-black rounded px-4 py-2.5 text-sm focus:outline-none flex-1"
@@ -342,7 +329,7 @@ export const Checkout: React.FC = () => {
               onClick={handleApplyCoupon}
               className="px-6 py-2.5 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium text-sm rounded transition-colors"
             >
-              Apply Coupon
+              {t('cart.applyCoupon')}
             </button>
           </div>
 
@@ -353,7 +340,7 @@ export const Checkout: React.FC = () => {
               disabled={loading}
               className="w-full py-4 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium text-base rounded transition-colors disabled:opacity-50"
             >
-              {loading ? 'Processing Order...' : 'Place Order'}
+              {loading ? t('checkout.processing') : t('checkout.placeOrder')}
             </button>
           </div>
 

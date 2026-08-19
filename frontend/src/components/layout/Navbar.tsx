@@ -7,24 +7,32 @@ import {
   User as UserIcon, 
   Menu, 
   X, 
-  LogOut, 
   Package, 
   XCircle, 
   Star, 
-  LayoutDashboard
+  LogOut, 
+  LayoutDashboard 
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useCartStore } from '../../store/useCartStore';
+import { useWishlistStore } from '../../store/useWishlistStore';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { useSiteConfigStore } from '../../store/useSiteConfigStore';
 
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
   const { totalItems } = useCartStore();
+  const { items: wishlistItems } = useWishlistStore();
+  const { currentLanguage, t } = useLanguageStore();
+  const { getLocalizedConfig } = useSiteConfigStore();
+  const config = getLocalizedConfig(currentLanguage);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  
   const navigate = useNavigate();
   const location = useLocation();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -45,11 +53,11 @@ export const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Shop', path: '/shop' },
-    { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/contact' },
-    ...(!isAuthenticated ? [{ name: 'Sign Up', path: '/register' }] : [])
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.shop'), path: '/shop' },
+    { name: t('nav.about'), path: '/about' },
+    { name: t('nav.contact'), path: '/contact' },
+    ...(!isAuthenticated ? [{ name: t('nav.signUp'), path: '/register' }] : [])
   ];
 
   return (
@@ -59,11 +67,15 @@ export const Navbar: React.FC = () => {
           
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 bg-exclusive-red rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-              <ShoppingCart className="w-5 h-5" />
-            </div>
+            {config.customLogoUrl ? (
+              <img src={config.customLogoUrl} alt={config.brandName} className="h-9 max-w-[150px] object-contain" />
+            ) : (
+              <div className="w-9 h-9 bg-exclusive-red rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
+                <ShoppingCart className="w-5 h-5" />
+              </div>
+            )}
             <span className="text-2xl font-bold tracking-tight font-poppins text-black">
-              Asha<span className="text-exclusive-red">Shop</span>
+              {config.brandName}<span className="text-exclusive-red">{config.brandHighlight}</span>
             </span>
           </Link>
 
@@ -76,42 +88,58 @@ export const Navbar: React.FC = () => {
                   key={link.path}
                   to={link.path}
                   className={`relative py-1 text-sm lg:text-base transition-colors hover:text-black ${
-                    isActive ? 'text-black font-semibold after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-black' : 'text-gray-600'
+                    isActive ? 'text-black font-semibold' : 'text-gray-600'
                   }`}
                 >
                   {link.name}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-gray-600"></span>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Search Bar & Action Icons */}
+          {/* Right Action Controls */}
           <div className="flex items-center gap-4 lg:gap-6">
             
-            {/* Search Input */}
-            <form onSubmit={handleSearch} className="hidden sm:flex items-center relative bg-exclusive-bg rounded px-4 py-2.5 w-52 lg:w-64">
+            {/* Search Input Box */}
+            <form onSubmit={handleSearch} className="relative hidden sm:block">
               <input
                 type="text"
-                placeholder="What are you looking for?"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent text-xs lg:text-sm text-black placeholder-gray-500 focus:outline-none w-full pr-6"
+                placeholder={t('nav.searchPlaceholder')}
+                className="w-48 lg:w-64 pl-4 pr-10 py-2 bg-exclusive-bg text-xs lg:text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-black placeholder-gray-400"
               />
-              <button type="submit" className="absolute right-3 text-black hover:text-exclusive-red transition-colors">
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-700 hover:text-black"
+              >
                 <Search className="w-4 h-4" />
               </button>
             </form>
 
             {/* Wishlist Icon */}
-            <Link to="/shop" title="Wishlist" className="relative p-1 text-black hover:text-exclusive-red transition-colors">
-              <Heart className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-exclusive-red text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                0
-              </span>
+            <Link
+              to="/wishlist"
+              className="relative text-black hover:text-exclusive-red transition-colors p-1"
+              title="Danh sách yêu thích"
+            >
+              <Heart className={`w-6 h-6 ${wishlistItems.length > 0 ? 'text-exclusive-red fill-exclusive-red' : ''}`} />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-exclusive-red text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold animate-fade-in">
+                  {wishlistItems.length}
+                </span>
+              )}
             </Link>
 
             {/* Cart Icon */}
-            <Link to="/cart" title="Cart" className="relative p-1 text-black hover:text-exclusive-red transition-colors">
+            <Link
+              to="/cart"
+              className="relative text-black hover:text-exclusive-red transition-colors p-1"
+              title="Cart"
+            >
               <ShoppingCart className="w-6 h-6" />
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-exclusive-red text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
@@ -120,13 +148,13 @@ export const Navbar: React.FC = () => {
               )}
             </Link>
 
-            {/* User Account / Profile Dropdown */}
+            {/* User Dropdown / Login Button */}
             {isAuthenticated ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                  className={`p-1.5 rounded-full transition-colors ${
-                    isUserDropdownOpen ? 'bg-exclusive-red text-white' : 'text-black hover:bg-gray-100'
+                  className={`p-1 rounded-full transition-colors ${
+                    isUserDropdownOpen ? 'bg-exclusive-red text-white' : 'text-black hover:text-exclusive-red'
                   }`}
                   title={user?.name}
                 >
@@ -152,7 +180,7 @@ export const Navbar: React.FC = () => {
                       className="flex items-center gap-3 px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors"
                     >
                       <UserIcon className="w-5 h-5 text-gray-300" />
-                      <span>Manage My Account</span>
+                      <span>{t('nav.manageAccount')}</span>
                     </Link>
 
                     <Link
@@ -161,7 +189,7 @@ export const Navbar: React.FC = () => {
                       className="flex items-center gap-3 px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors"
                     >
                       <Package className="w-5 h-5 text-gray-300" />
-                      <span>My Order</span>
+                      <span>{t('nav.myOrder')}</span>
                     </Link>
 
                     <Link
@@ -170,7 +198,7 @@ export const Navbar: React.FC = () => {
                       className="flex items-center gap-3 px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors"
                     >
                       <XCircle className="w-5 h-5 text-gray-300" />
-                      <span>My Cancellations</span>
+                      <span>{t('nav.myCancellations')}</span>
                     </Link>
 
                     <Link
@@ -179,7 +207,7 @@ export const Navbar: React.FC = () => {
                       className="flex items-center gap-3 px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors"
                     >
                       <Star className="w-5 h-5 text-gray-300" />
-                      <span>My Reviews</span>
+                      <span>{t('nav.myReviews')}</span>
                     </Link>
 
                     {user?.role === 'admin' && (
@@ -189,7 +217,7 @@ export const Navbar: React.FC = () => {
                         className="flex items-center gap-3 px-3 py-2 text-sm rounded text-exclusive-red hover:bg-white/10 transition-colors font-medium"
                       >
                         <LayoutDashboard className="w-5 h-5" />
-                        <span>Admin Dashboard</span>
+                        <span>{t('nav.adminDashboard')}</span>
                       </Link>
                     )}
 
@@ -203,7 +231,7 @@ export const Navbar: React.FC = () => {
                         className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded hover:bg-red-500/20 text-red-400 transition-colors"
                       >
                         <LogOut className="w-5 h-5" />
-                        <span>Logout</span>
+                        <span>{t('nav.logout')}</span>
                       </button>
                     </div>
                   </div>
@@ -214,59 +242,63 @@ export const Navbar: React.FC = () => {
                 to="/login"
                 className="hidden sm:inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-exclusive-red hover:bg-exclusive-red-hover rounded transition-colors"
               >
-                Log In
+                {t('nav.logIn')}
               </Link>
             )}
 
-            {/* Mobile Menu Toggle Button */}
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-1 text-black hover:text-exclusive-red"
+              className="md:hidden p-1 text-black"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
+
           </div>
         </div>
 
         {/* Mobile Navigation Drawer */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4 px-2 space-y-3 bg-white">
-            <form onSubmit={handleSearch} className="flex items-center bg-exclusive-bg rounded px-3 py-2">
+          <div className="md:hidden py-4 border-t border-gray-100 space-y-3">
+            <form onSubmit={handleSearch} className="relative mb-3">
               <input
                 type="text"
-                placeholder="What are you looking for?"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent text-sm text-black focus:outline-none w-full pr-2"
+                placeholder={t('nav.searchPlaceholder')}
+                className="w-full pl-4 pr-10 py-2 bg-exclusive-bg text-sm rounded-md focus:outline-none"
               />
-              <button type="submit">
-                <Search className="w-4 h-4 text-black" />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                <Search className="w-4 h-4" />
               </button>
             </form>
 
-            <nav className="flex flex-col space-y-2 pt-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 rounded"
-                >
-                  {link.name}
-                </Link>
-              ))}
-              {!isAuthenticated && (
-                <Link
-                  to="/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="px-3 py-2 text-sm font-medium text-white bg-exclusive-red text-center rounded mt-2"
-                >
-                  Log In
-                </Link>
-              )}
-            </nav>
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => setIsMenuOpen(false)}
+                className="block py-2 text-sm font-medium text-gray-700 hover:text-exclusive-red"
+              >
+                {link.name}
+              </Link>
+            ))}
+
+            {!isAuthenticated && (
+              <Link
+                to="/login"
+                onClick={() => setIsMenuOpen(false)}
+                className="block py-2 text-sm font-semibold text-exclusive-red"
+              >
+                {t('nav.logIn')}
+              </Link>
+            )}
           </div>
         )}
+
       </div>
     </header>
   );

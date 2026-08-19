@@ -16,6 +16,10 @@ export class Category {
 
   @Prop({ default: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80' })
   image: string;
+
+  @Prop({ type: String, default: null })
+  parentId: string | null;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
+CategorySchema.index({ parentId: 1, createdAt: 1 });

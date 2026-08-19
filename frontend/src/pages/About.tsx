@@ -1,8 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Store, DollarSign, ShoppingBag, Coins, Truck, Headset, ShieldCheck, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { useLanguageStore } from '../store/useLanguageStore';
+import { useSiteConfigStore } from '../store/useSiteConfigStore';
 
 export const About: React.FC = () => {
+  const { currentLanguage, t } = useLanguageStore();
+  const { getLocalizedConfig } = useSiteConfigStore();
+  const config = getLocalizedConfig(currentLanguage);
+
   const stats = [
     { icon: Store, value: '10.5k', label: 'Sellers active our site' },
     { icon: DollarSign, value: '33k', label: 'Monthly Product Sale', active: true },
@@ -33,28 +39,28 @@ export const About: React.FC = () => {
       
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500">
-        <Link to="/" className="hover:text-black transition-colors">Home</Link>
+        <Link to="/" className="hover:text-black transition-colors">{t('nav.home')}</Link>
         <span>/</span>
-        <span className="text-black font-medium">About</span>
+        <span className="text-black font-medium">{t('nav.about')}</span>
       </nav>
 
       {/* Story Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-6 space-y-6">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-wide text-black">Our Story</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-wide text-black">{config.aboutTitle || t('about.title')}</h1>
           <p className="text-sm text-gray-700 leading-relaxed">
-            Launched in 2015, Exclusive is South Asia’s premier online shopping marketplace with an active presence in Bangladesh. Supported by a wide range of tailored marketing, data and service solutions, Exclusive has 10,500 sellers and 300 brands and serves 3 millions customers across the region.
+            {config.aboutStory1 || t('about.story1')}
           </p>
           <p className="text-sm text-gray-700 leading-relaxed">
-            Exclusive has more than 1 Million products to offer, growing at a very fast pace. Exclusive offers a diverse assortment in categories ranging from consumer electronics to fashion, beauty, and home appliances.
+            {config.aboutStory2 || t('about.story2')}
           </p>
         </div>
 
         <div className="lg:col-span-6">
           <img
-            src="https://images.unsplash.com/photo-1573855619003-97b4799dcd8b?auto=format&fit=crop&w=800&q=80"
+            src={config.aboutImageUrl || 'https://images.unsplash.com/photo-1573855619003-97b4799dcd8b?auto=format&fit=crop&w=800&q=80'}
             alt="Our Story"
-            className="rounded w-full object-cover shadow-md max-h-[450px]"
+            className="rounded-2xl w-full object-cover shadow-md max-h-[450px]"
           />
         </div>
       </div>
@@ -95,53 +101,53 @@ export const About: React.FC = () => {
                 <img
                   src={member.image}
                   alt={member.name}
-                  className="max-h-full object-cover rounded group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover rounded group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="space-y-1">
-                <h3 className="text-2xl font-bold text-black">{member.name}</h3>
+                <h3 className="text-xl font-bold text-black">{member.name}</h3>
                 <p className="text-xs text-gray-500">{member.role}</p>
-                <div className="flex items-center gap-4 pt-2 text-black">
-                  <a href="#" className="hover:text-exclusive-red transition-colors"><Twitter className="w-4 h-4" /></a>
-                  <a href="#" className="hover:text-exclusive-red transition-colors"><Instagram className="w-4 h-4" /></a>
-                  <a href="#" className="hover:text-exclusive-red transition-colors"><Linkedin className="w-4 h-4" /></a>
-                </div>
+              </div>
+              <div className="flex items-center gap-4 text-black">
+                <Twitter className="w-4 h-4 cursor-pointer hover:text-exclusive-red transition-colors" />
+                <Instagram className="w-4 h-4 cursor-pointer hover:text-exclusive-red transition-colors" />
+                <Linkedin className="w-4 h-4 cursor-pointer hover:text-exclusive-red transition-colors" />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Service Guarantee Badges */}
+      {/* Service Guarantees Badges */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center pt-8">
-        <div className="flex flex-col items-center space-y-3">
-          <div className="w-16 h-16 rounded-full bg-neutral-300 p-2 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-20 h-20 rounded-full bg-neutral-300 p-2 flex items-center justify-center">
             <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-white">
-              <Truck className="w-7 h-7" />
+              <Truck className="w-8 h-8" />
             </div>
           </div>
-          <h4 className="font-bold text-base">FREE AND FAST DELIVERY</h4>
-          <p className="text-xs text-gray-500">Free delivery for all orders over $140</p>
+          <h4 className="font-bold text-lg">{config.badgeDeliveryTitle || t('home.badge.delivery.title')}</h4>
+          <p className="text-xs text-gray-500">{config.badgeDeliveryDesc || t('home.badge.delivery.desc')}</p>
         </div>
 
-        <div className="flex flex-col items-center space-y-3">
-          <div className="w-16 h-16 rounded-full bg-neutral-300 p-2 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-20 h-20 rounded-full bg-neutral-300 p-2 flex items-center justify-center">
             <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-white">
-              <Headset className="w-7 h-7" />
+              <Headset className="w-8 h-8" />
             </div>
           </div>
-          <h4 className="font-bold text-base">24/7 CUSTOMER SERVICE</h4>
-          <p className="text-xs text-gray-500">Friendly 24/7 customer support</p>
+          <h4 className="font-bold text-lg">{config.badgeServiceTitle || t('home.badge.service.title')}</h4>
+          <p className="text-xs text-gray-500">{config.badgeServiceDesc || t('home.badge.service.desc')}</p>
         </div>
 
-        <div className="flex flex-col items-center space-y-3">
-          <div className="w-16 h-16 rounded-full bg-neutral-300 p-2 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-20 h-20 rounded-full bg-neutral-300 p-2 flex items-center justify-center">
             <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-white">
-              <ShieldCheck className="w-7 h-7" />
+              <ShieldCheck className="w-8 h-8" />
             </div>
           </div>
-          <h4 className="font-bold text-base">MONEY BACK GUARANTEE</h4>
-          <p className="text-xs text-gray-500">We return money within 30 days</p>
+          <h4 className="font-bold text-lg">{config.badgeReturnTitle || t('home.badge.moneyBack.title')}</h4>
+          <p className="text-xs text-gray-500">{config.badgeReturnDesc || t('home.badge.moneyBack.desc')}</p>
         </div>
       </div>
 

@@ -72,14 +72,23 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     checkAuth: async () => {
-      if (!get().tokens) return;
+      const tokensStr = localStorage.getItem('ashashop_tokens');
+      if (!tokensStr) return;
+
       try {
         const res = await usersApi.getProfile();
-        const user = res.data.data;
-        localStorage.setItem('ashashop_user', JSON.stringify(user));
-        set({ user, isAuthenticated: true });
+        if (res.data?.success && res.data.data) {
+          const user = res.data.data;
+          localStorage.setItem('ashashop_user', JSON.stringify(user));
+          set({ user, isAuthenticated: true });
+        } else {
+          throw new Error('Dữ liệu tài khoản không hợp lệ');
+        }
       } catch (e) {
-        // Token might be invalid
+        // Token invalid or user reset in DB
+        localStorage.removeItem('ashashop_user');
+        localStorage.removeItem('ashashop_tokens');
+        set({ user: null, tokens: null, isAuthenticated: false });
       }
     },
 

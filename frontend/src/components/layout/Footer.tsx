@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Send, Facebook, Twitter, Instagram, Linkedin, QrCode } from 'lucide-react';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { useSiteConfigStore } from '../../store/useSiteConfigStore';
 
 export const Footer: React.FC = () => {
+  const { currentLanguage, t } = useLanguageStore();
+  const { getLocalizedConfig } = useSiteConfigStore();
+  const config = getLocalizedConfig(currentLanguage);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -23,20 +28,24 @@ export const Footer: React.FC = () => {
           {/* Column 1: AshaShop / Subscribe */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-exclusive-red rounded-lg flex items-center justify-center text-white shadow-md">
-                <span className="font-bold text-lg">A</span>
-              </div>
+              {config.customLogoUrl ? (
+                <img src={config.customLogoUrl} alt={config.brandName} className="h-8 max-w-[140px] object-contain" />
+              ) : (
+                <div className="w-9 h-9 bg-exclusive-red rounded-lg flex items-center justify-center text-white shadow-md">
+                  <span className="font-bold text-lg">{config.brandName.charAt(0)}</span>
+                </div>
+              )}
               <span className="text-2xl font-bold tracking-tight font-poppins text-white">
-                Asha<span className="text-exclusive-red">Shop</span>
+                {config.brandName}<span className="text-exclusive-red">{config.brandHighlight}</span>
               </span>
             </Link>
-            <h4 className="font-medium text-lg text-neutral-200">Subscribe</h4>
-            <p className="text-sm text-neutral-400">Get 10% off your first order</p>
+            <h4 className="font-medium text-lg text-neutral-200">{t('footer.subscribe')}</h4>
+            <p className="text-sm text-neutral-400">{config.footerDescription || t('footer.discountOffer')}</p>
             
             <form onSubmit={handleSubscribe} className="relative mt-2">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('footer.enterEmail')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -57,95 +66,111 @@ export const Footer: React.FC = () => {
 
           {/* Column 2: Support */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-lg text-neutral-100">Support</h4>
+            <h4 className="font-semibold text-lg text-neutral-100">{t('footer.support')}</h4>
             <p className="text-sm text-neutral-400 leading-relaxed">
-              111 Cau Giay, Hanoi, Vietnam
+              {config.address}
             </p>
             <p className="text-sm text-neutral-400 hover:text-white transition-colors">
-              <a href="mailto:support@ashashop.com">exclusive@gmail.com</a>
+              <a href={`mailto:${config.supportEmail}`}>{config.supportEmail}</a>
             </p>
             <p className="text-sm text-neutral-400">
-              <a href="tel:+84987654321">+88015-88888-9999</a>
+              <a href={`tel:${config.hotline}`}>{config.hotline}</a>
             </p>
           </div>
 
           {/* Column 3: Account */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-lg text-neutral-100">Account</h4>
+            <h4 className="font-semibold text-lg text-neutral-100">{t('footer.account')}</h4>
             <ul className="space-y-3 text-sm text-neutral-400">
               <li>
-                <Link to="/profile" className="hover:text-white transition-colors">My Account</Link>
+                <Link to="/profile" className="hover:text-white transition-colors">{t('nav.manageAccount')}</Link>
               </li>
               <li>
-                <Link to="/login" className="hover:text-white transition-colors">Login / Register</Link>
+                <Link to="/login" className="hover:text-white transition-colors">{t('nav.logIn')} / {t('nav.signUp')}</Link>
               </li>
               <li>
-                <Link to="/cart" className="hover:text-white transition-colors">Cart</Link>
+                <Link to="/cart" className="hover:text-white transition-colors">{t('cart.title')}</Link>
               </li>
               <li>
-                <Link to="/shop" className="hover:text-white transition-colors">Wishlist</Link>
+                <Link to="/wishlist" className="hover:text-white transition-colors">{t('footer.wishlist') || 'Danh Sách Yêu Thích'}</Link>
               </li>
               <li>
-                <Link to="/shop" className="hover:text-white transition-colors">Shop</Link>
+                <Link to="/shop" className="hover:text-white transition-colors">{t('nav.shop')}</Link>
               </li>
             </ul>
           </div>
 
           {/* Column 4: Quick Link */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-lg text-neutral-100">Quick Link</h4>
+            <h4 className="font-semibold text-lg text-neutral-100">{t('footer.quickLink')}</h4>
             <ul className="space-y-3 text-sm text-neutral-400">
               <li>
-                <Link to="/about" className="hover:text-white transition-colors">Privacy Policy</Link>
+                <Link to="/privacy-policy" className="hover:text-white transition-colors">{t('footer.privacyPolicy') || 'Chính Sách Bảo Mật'}</Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-white transition-colors">Terms Of Use</Link>
+                <Link to="/terms" className="hover:text-white transition-colors">{t('footer.termsOfUse') || 'Điều Khoản Sử Dụng'}</Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-white transition-colors">FAQ</Link>
+                <Link to="/faq" className="hover:text-white transition-colors">{t('footer.faq') || 'Câu Hỏi Thường Gặp'}</Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-white transition-colors">Contact</Link>
+                <Link to="/contact" className="hover:text-white transition-colors">{t('nav.contact')}</Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 5: Download App */}
+          {/* Column 5: Download App & Socials */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-lg text-neutral-100">Download App</h4>
-            <p className="text-xs text-neutral-400">Save $3 with App New User Only</p>
+            <h4 className="font-semibold text-lg text-neutral-100">{t('footer.downloadApp')}</h4>
+            <p className="text-xs text-neutral-400">{config.footerAppDiscount || t('footer.saveApp')}</p>
             
             <div className="flex items-center gap-3">
-              <div className="w-20 h-20 bg-white p-1.5 rounded flex items-center justify-center">
-                <QrCode className="w-full h-full text-black" />
+              <div className="bg-white p-1.5 rounded shadow-sm">
+                <QrCode className="w-16 h-16 text-black" />
               </div>
               <div className="flex flex-col gap-2">
-                <div className="border border-white/40 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:border-white transition-colors">
-                  <span className="text-[10px] text-neutral-300">GET IT ON</span>
-                  <span className="text-xs font-bold">Google Play</span>
-                </div>
-                <div className="border border-white/40 rounded px-2 py-1 flex items-center gap-1 cursor-pointer hover:border-white transition-colors">
-                  <span className="text-[10px] text-neutral-300">Download on the</span>
-                  <span className="text-xs font-bold">App Store</span>
-                </div>
+                <button className="bg-neutral-900 border border-neutral-700 hover:border-white px-3 py-1.5 rounded flex items-center gap-2 text-xs transition-colors">
+                  <span className="text-[10px] uppercase font-mono">Google Play</span>
+                </button>
+                <button className="bg-neutral-900 border border-neutral-700 hover:border-white px-3 py-1.5 rounded flex items-center gap-2 text-xs transition-colors">
+                  <span className="text-[10px] uppercase font-mono">App Store</span>
+                </button>
               </div>
             </div>
 
-            {/* Social Icons */}
-            <div className="flex items-center gap-6 pt-2 text-white">
-              <a href="#" className="hover:text-exclusive-red transition-colors" title="Facebook"><Facebook className="w-5 h-5" /></a>
-              <a href="#" className="hover:text-exclusive-red transition-colors" title="Twitter"><Twitter className="w-5 h-5" /></a>
-              <a href="#" className="hover:text-exclusive-red transition-colors" title="Instagram"><Instagram className="w-5 h-5" /></a>
-              <a href="#" className="hover:text-exclusive-red transition-colors" title="Linkedin"><Linkedin className="w-5 h-5" /></a>
+            {/* Social Media Links */}
+            <div className="flex items-center gap-6 pt-2 text-neutral-400">
+              {config.facebookUrl && (
+                <a href={config.facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" aria-label="Facebook">
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+              {config.twitterUrl && (
+                <a href={config.twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" aria-label="Twitter">
+                  <Twitter className="w-5 h-5" />
+                </a>
+              )}
+              {config.instagramUrl && (
+                <a href={config.instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" aria-label="Instagram">
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+              {config.linkedinUrl && (
+                <a href={config.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" aria-label="LinkedIn">
+                  <Linkedin className="w-5 h-5" />
+                </a>
+              )}
             </div>
+
           </div>
 
         </div>
 
-        {/* Copyright Bar */}
+        {/* Bottom Copyright */}
         <div className="pt-6 text-center text-xs text-neutral-500">
-          <p>© Copyright Rimel 2022 / AshaShop 2026. All right reserved</p>
+          <p>{config.copyrightText || t('footer.copyright')}</p>
         </div>
+
       </div>
     </footer>
   );

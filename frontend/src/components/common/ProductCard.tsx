@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { Heart, Eye, ShoppingCart, Star } from 'lucide-react';
 import { Product } from '../../types';
 import { useCartStore } from '../../store/useCartStore';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { useWishlistStore } from '../../store/useWishlistStore';
+import { translateProduct } from '../../i18n/translator';
 
 interface ProductCardProps {
   product: Product;
@@ -15,14 +18,18 @@ export const formatPrice = (amount: number) => {
 };
 
 export const ProductCard: React.FC<ProductCardProps> = ({ 
-  product, 
+  product: rawProduct, 
   discountPercentage = 25,
   isNew = false 
 }) => {
   const { addItem } = useCartStore();
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { currentLanguage, t } = useLanguageStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
   const [addedAnimation, setAddedAnimation] = useState(false);
 
+  const product = translateProduct(rawProduct, currentLanguage);
+
+  const isWishlisted = isInWishlist(product._id);
   const formatCurrency = formatPrice;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -52,7 +59,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
           {isNew && (
             <span className="bg-exclusive-green text-black text-xs font-bold px-3 py-1 rounded">
-              NEW
+              {t('card.new')}
             </span>
           )}
         </div>
@@ -63,19 +70,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setIsWishlisted(!isWishlisted);
+              toggleWishlist(product);
             }}
-            title="Add to Wishlist"
-            className={`w-8 h-8 rounded-full bg-white flex items-center justify-center shadow transition-colors ${
-              isWishlisted ? 'text-exclusive-red fill-exclusive-red' : 'text-black hover:bg-exclusive-red hover:text-white'
+            title={isWishlisted ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
+            className={`w-8 h-8 rounded-full bg-white flex items-center justify-center shadow transition-colors cursor-pointer ${
+              isWishlisted ? 'text-exclusive-red' : 'text-black hover:bg-exclusive-red hover:text-white'
             }`}
           >
-            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-exclusive-red text-exclusive-red' : ''}`} />
           </button>
           
           <Link
             to={`/product/${product.slug || product._id}`}
-            title="Quick View"
+            title="Xem chi tiết"
             className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow text-black hover:bg-exclusive-red hover:text-white transition-colors"
           >
             <Eye className="w-4 h-4" />
@@ -85,9 +92,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Product Image */}
         <Link to={`/product/${product.slug || product._id}`} className="w-full h-full flex items-center justify-center">
           <img
-            src={product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80'}
+            src={product.images?.[0] || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80'}
             alt={product.name}
-            className="max-h-40 max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+            className="max-h-56 max-w-full object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
         </Link>
@@ -102,7 +109,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           }`}
         >
           <ShoppingCart className="w-4 h-4" />
-          <span>{addedAnimation ? 'Added to Cart ✓' : 'Add To Cart'}</span>
+          <span>{addedAnimation ? t('card.added') : t('card.addToCart')}</span>
         </button>
       </div>
 
@@ -116,32 +123,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {product.name}
         </Link>
 
-        {/* Price Section */}
-        <div className="flex items-center gap-3 mb-2 font-medium">
-          <span className="text-exclusive-red font-semibold text-base">
+        {/* Price Row */}
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-exclusive-red font-bold text-base">
             {formatCurrency(product.price)}
           </span>
           {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-gray-400 line-through text-sm">
+            <span className="text-gray-400 line-through text-xs font-medium">
               {formatCurrency(product.originalPrice)}
             </span>
           )}
         </div>
 
-        {/* Ratings & Reviews */}
-        <div className="flex items-center gap-2 mt-auto">
-          <div className="flex items-center text-exclusive-gold">
+        {/* Rating Stars */}
+        <div className="flex items-center gap-1.5 mt-2">
+          <div className="flex text-amber-400">
             {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-3.5 h-3.5 ${
-                  i < Math.floor(product.rating || 5) ? 'fill-current' : 'text-gray-300'
-                }`}
+              <Star 
+                key={i} 
+                className={`w-3.5 h-3.5 ${i < Math.floor(product.rating || 5) ? 'fill-current' : 'text-gray-300'}`} 
               />
             ))}
           </div>
-          <span className="text-xs text-gray-500 font-semibold">
-            ({product.numReviews || 88})
+          <span className="text-xs text-gray-500 font-medium">
+            ({(product as any).reviewsCount || 88})
           </span>
         </div>
       </div>
