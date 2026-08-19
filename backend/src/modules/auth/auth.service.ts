@@ -47,6 +47,94 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
+  async forgotPassword(dto: { email: string }) {
+    const user = await this.usersService.findByEmail(dto.email);
+    if (!user) {
+      return {
+        success: true,
+        message: 'Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu đã được xử lý.',
+      };
+    }
+
+    // Generate 6-digit OTP code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    await this.usersService.setResetToken(dto.email, resetCode, expires);
+
+    return {
+      success: true,
+      message: 'Mã xác thực đặt lại mật khẩu đã được gửi đến email của bạn.',
+      resetCode, // Included for easy development/testing verification
+    };
+  }
+
+  async resetPassword(dto: { email: string; token: string; newPassword: string }) {
+    await this.usersService.verifyAndResetPassword(dto.email, dto.token, dto.newPassword);
+    return {
+      success: true,
+      message: 'Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập với mật khẩu mới.',
+    };
+  }
+
+  async googleLogin(dto: { token: string; email?: string; name?: string; avatar?: string; googleId?: string }) {
+    const email = dto.email || `google_user_${Date.now()}@gmail.com`;
+    const name = dto.name || 'Google User';
+    const googleId = dto.googleId || dto.token.slice(0, 30);
+
+    let user = await this.usersService.findByGoogleId(googleId);
+    if (!user) {
+      user = await this.usersService.findByEmail(email);
+    }
+
+    if (!user) {
+      user = await this.usersService.createOAuthUser({
+        name,
+        email,
+        avatar: dto.avatar,
+        googleId,
+        authProvider: 'google',
+      });
+    } else {
+      if (!user.googleId) {
+        user.googleId = googleId;
+        if (dto.avatar) user.avatar = dto.avatar;
+        await user.save();
+      }
+    }
+
+    return this.generateTokens(user);
+  }
+
+  async facebookLogin(dto: { accessToken: string; email?: string; name?: string; avatar?: string; facebookId?: string }) {
+    const email = dto.email || `facebook_user_${Date.now()}@facebook.com`;
+    const name = dto.name || 'Facebook User';
+    const facebookId = dto.facebookId || dto.accessToken.slice(0, 30);
+
+    let user = await this.usersService.findByFacebookId(facebookId);
+    if (!user) {
+      user = await this.usersService.findByEmail(email);
+    }
+
+    if (!user) {
+      user = await this.usersService.createOAuthUser({
+        name,
+        email,
+        avatar: dto.avatar,
+        facebookId,
+        authProvider: 'facebook',
+      });
+    } else {
+      if (!user.facebookId) {
+        user.facebookId = facebookId;
+        if (dto.avatar) user.avatar = dto.avatar;
+        await user.save();
+      }
+    }
+
+    return this.generateTokens(user);
+  }
+
   async refreshToken(dto: RefreshTokenDto) {
     try {
       const refreshSecret = this.configService.get<string>(

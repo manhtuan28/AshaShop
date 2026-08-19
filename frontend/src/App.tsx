@@ -21,6 +21,7 @@ import { Wishlist } from './pages/Wishlist';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfUse } from './pages/TermsOfUse';
 import { FAQ } from './pages/FAQ';
+import { ForgotPassword } from './pages/ForgotPassword';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProducts } from './pages/admin/AdminProducts';
@@ -73,6 +74,8 @@ export const App: React.FC = () => {
           <Route path="faq" element={<FAQ />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ForgotPassword />} />
 
           {/* User Protected Routes */}
           <Route element={<ProtectedRoute />}>

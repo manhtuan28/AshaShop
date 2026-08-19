@@ -76,6 +76,12 @@ api.interceptors.response.use(
 export const authApi = {
   login: (data: any) => api.post<ApiResponse<{ user: User; tokens: { accessToken: string; refreshToken: string } }>>('/auth/login', data),
   register: (data: any) => api.post<ApiResponse<{ user: User; tokens: { accessToken: string; refreshToken: string } }>>('/auth/register', data),
+  forgotPassword: (data: { email: string }) => api.post<ApiResponse<{ message: string; resetCode?: string }>>('/auth/forgot-password', data),
+  resetPassword: (data: { email: string; token: string; newPassword: string }) => api.post<ApiResponse<{ message: string }>>('/auth/reset-password', data),
+  googleLogin: (data: { token: string; email?: string; name?: string; avatar?: string; googleId?: string }) => 
+    api.post<ApiResponse<{ user: User; tokens: { accessToken: string; refreshToken: string } }>>('/auth/oauth/google', data),
+  facebookLogin: (data: { accessToken: string; email?: string; name?: string; avatar?: string; facebookId?: string }) => 
+    api.post<ApiResponse<{ user: User; tokens: { accessToken: string; refreshToken: string } }>>('/auth/oauth/facebook', data),
   logout: () => api.post<ApiResponse<{ message: string }>>('/auth/logout'),
   getMe: () => api.get<ApiResponse<User>>('/auth/me'),
 };

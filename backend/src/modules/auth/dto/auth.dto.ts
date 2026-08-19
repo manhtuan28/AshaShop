@@ -46,3 +46,71 @@ export class RefreshTokenDto {
   @IsNotEmpty({ message: 'Refresh token không được để trống' })
   refreshToken: string;
 }
+
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'user@example.com', description: 'Email cần đặt lại mật khẩu' })
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  @IsNotEmpty({ message: 'Email không được để trống' })
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({ example: 'user@example.com', description: 'Email của tài khoản' })
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  @IsNotEmpty({ message: 'Email không được để trống' })
+  email: string;
+
+  @ApiProperty({ example: '123456', description: 'Mã xác thực OTP hoặc Reset Token' })
+  @IsString()
+  @IsNotEmpty({ message: 'Mã xác thực không được để trống' })
+  token: string;
+
+  @ApiProperty({ example: 'newPassword123', description: 'Mật khẩu mới' })
+  @IsString()
+  @MinLength(6, { message: 'Mật khẩu mới phải có ít nhất 6 ký tự' })
+  newPassword: string;
+}
+
+export class GoogleLoginDto {
+  @ApiProperty({ example: 'google_id_token_here', description: 'Google ID Token hoặc Token từ Google SDK' })
+  @IsNotEmpty({ message: 'Google token không được để trống' })
+  token: string;
+
+  @ApiPropertyOptional({ example: 'user@gmail.com' })
+  @IsOptional()
+  email?: string;
+
+  @ApiPropertyOptional({ example: 'Nguyễn Văn A' })
+  @IsOptional()
+  name?: string;
+
+  @ApiPropertyOptional({ example: 'https://avatar.url' })
+  @IsOptional()
+  avatar?: string;
+
+  @ApiPropertyOptional({ example: 'google_123456789' })
+  @IsOptional()
+  googleId?: string;
+}
+
+export class FacebookLoginDto {
+  @ApiProperty({ example: 'facebook_access_token_here', description: 'Facebook Access Token' })
+  @IsNotEmpty({ message: 'Facebook token không được để trống' })
+  accessToken: string;
+
+  @ApiPropertyOptional({ example: 'user@facebook.com' })
+  @IsOptional()
+  email?: string;
+
+  @ApiPropertyOptional({ example: 'Nguyễn Văn B' })
+  @IsOptional()
+  name?: string;
+
+  @ApiPropertyOptional({ example: 'https://avatar.url' })
+  @IsOptional()
+  avatar?: string;
+
+  @ApiPropertyOptional({ example: 'fb_123456789' })
+  @IsOptional()
+  facebookId?: string;
+}

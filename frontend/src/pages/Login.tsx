@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { authApi } from '../services/api';
+import { SocialAuthButtons } from '../components/common/SocialAuthButtons';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -104,6 +105,9 @@ export const Login: React.FC = () => {
             </div>
 
           </form>
+
+          {/* Social Auth (Google / Facebook) */}
+          <SocialAuthButtons mode="login" />
 
           <div className="text-center text-sm text-gray-600 pt-4 border-t border-gray-100">
             {t('auth.noAccount')}{' '}

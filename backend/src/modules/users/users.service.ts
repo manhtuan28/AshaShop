@@ -44,6 +44,80 @@ export class UsersService {
     return this.userModel.findOne({ email: email.toLowerCase() }).exec();
   }
 
+  async findByGoogleId(googleId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ googleId }).exec();
+  }
+
+  async findByFacebookId(facebookId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ facebookId }).exec();
+  }
+
+  async createOAuthUser(data: {
+    name: string;
+    email: string;
+    avatar?: string;
+    googleId?: string;
+    facebookId?: string;
+    authProvider: 'google' | 'facebook';
+  }): Promise<UserDocument> {
+    const randomPass = Math.random().toString(36).slice(-10) + '!@#$';
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(randomPass, salt);
+
+    const newUser = new this.userModel({
+      name: data.name,
+      email: data.email.toLowerCase(),
+      avatar: data.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      password: hashedPassword,
+      googleId: data.googleId || null,
+      facebookId: data.facebookId || null,
+      authProvider: data.authProvider,
+      role: 'customer',
+    });
+
+    return newUser.save();
+  }
+
+  async setResetToken(email: string, token: string, expires: Date): Promise<UserDocument | null> {
+    const hashedToken = await bcrypt.hash(token, 8);
+    return this.userModel.findOneAndUpdate(
+      { email: email.toLowerCase() },
+      {
+        $set: {
+          resetPasswordToken: hashedToken,
+          resetPasswordExpires: expires,
+        },
+      },
+      { new: true },
+    ).exec();
+  }
+
+  async verifyAndResetPassword(email: string, token: string, newPass: string): Promise<boolean> {
+    const user = await this.userModel.findOne({
+      email: email.toLowerCase(),
+      resetPasswordExpires: { $gt: new Date() },
+    }).exec();
+
+    if (!user || !user.resetPasswordToken) {
+      throw new BadRequestException('Mã xác thực không hợp lệ hoặc đã hết hạn.');
+    }
+
+    const isMatch = await bcrypt.compare(token, user.resetPasswordToken);
+    if (!isMatch) {
+      throw new BadRequestException('Mã xác thực không chính xác.');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPass, salt);
+
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return true;
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDocument> {
     const user = await this.findById(id);
 

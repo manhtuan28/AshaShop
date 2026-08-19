@@ -42,8 +42,26 @@ export class User {
 
   @Prop({ default: null })
   refreshToken?: string;
+
+  @Prop({ default: 'local' })
+  authProvider?: string;
+
+  @Prop({ default: null })
+  googleId?: string;
+
+  @Prop({ default: null })
+  facebookId?: string;
+
+  @Prop({ default: null })
+  resetPasswordToken?: string;
+
+  @Prop({ default: null })
+  resetPasswordExpires?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({ role: 1, createdAt: -1 });
 UserSchema.index({ createdAt: -1 });
+UserSchema.index({ googleId: 1 });
+UserSchema.index({ facebookId: 1 });
+UserSchema.index({ resetPasswordToken: 1 });
