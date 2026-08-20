@@ -65,7 +65,6 @@ export class AuthService {
     return {
       success: true,
       message: 'Mã xác thực đặt lại mật khẩu đã được gửi đến email của bạn.',
-      resetCode, // Included for easy development/testing verification
     };
   }
 
@@ -78,9 +77,51 @@ export class AuthService {
   }
 
   async googleLogin(dto: { token: string; email?: string; name?: string; avatar?: string; googleId?: string }) {
-    const email = dto.email || `google_user_${Date.now()}@gmail.com`;
-    const name = dto.name || 'Google User';
-    const googleId = dto.googleId || dto.token.slice(0, 30);
+    let email = dto.email;
+    let name = dto.name;
+    let avatar = dto.avatar;
+    let googleId = dto.googleId;
+
+    // 1. Verify token with Google API
+    if (dto.token) {
+      try {
+        // Try verifying as ID token (JWT)
+        const idTokenRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${dto.token}`);
+        if (idTokenRes.ok) {
+          const idData: any = await idTokenRes.json();
+          if (idData && idData.sub) {
+            googleId = idData.sub;
+            email = idData.email || email;
+            name = idData.name || name;
+            avatar = idData.picture || avatar;
+          }
+        } else {
+          // Try verifying as OAuth2 Access Token
+          const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${dto.token}` },
+          });
+          if (userInfoRes.ok) {
+            const userData: any = await userInfoRes.json();
+            if (userData && userData.sub) {
+              googleId = userData.sub;
+              email = userData.email || email;
+              name = userData.name || name;
+              avatar = userData.picture || avatar;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Lỗi kết nối xác thực Google API:', err);
+      }
+    }
+
+    if (!googleId && !email) {
+      throw new UnauthorizedException('Không thể xác thực thông tin tài khoản Google');
+    }
+
+    email = email || `google_${googleId}@gmail.com`;
+    name = name || 'Google User';
+    googleId = googleId || `google_${Date.now()}`;
 
     let user = await this.usersService.findByGoogleId(googleId);
     if (!user) {
@@ -91,14 +132,25 @@ export class AuthService {
       user = await this.usersService.createOAuthUser({
         name,
         email,
-        avatar: dto.avatar,
+        avatar,
         googleId,
         authProvider: 'google',
       });
     } else {
+      let updated = false;
       if (!user.googleId) {
         user.googleId = googleId;
-        if (dto.avatar) user.avatar = dto.avatar;
+        updated = true;
+      }
+      if (avatar && !user.avatar) {
+        user.avatar = avatar;
+        updated = true;
+      }
+      if (name && (!user.name || user.name === 'User')) {
+        user.name = name;
+        updated = true;
+      }
+      if (updated) {
         await user.save();
       }
     }
@@ -107,9 +159,38 @@ export class AuthService {
   }
 
   async facebookLogin(dto: { accessToken: string; email?: string; name?: string; avatar?: string; facebookId?: string }) {
-    const email = dto.email || `facebook_user_${Date.now()}@facebook.com`;
-    const name = dto.name || 'Facebook User';
-    const facebookId = dto.facebookId || dto.accessToken.slice(0, 30);
+    let email = dto.email;
+    let name = dto.name;
+    let avatar = dto.avatar;
+    let facebookId = dto.facebookId;
+
+    // 1. Verify access token with Facebook Graph API
+    if (dto.accessToken) {
+      try {
+        const fbRes = await fetch(
+          `https://graph.facebook.com/v20.0/me?fields=id,name,email,picture.type(large)&access_token=${dto.accessToken}`,
+        );
+        if (fbRes.ok) {
+          const fbData: any = await fbRes.json();
+          if (fbData && fbData.id) {
+            facebookId = fbData.id;
+            name = fbData.name || name;
+            email = fbData.email || email;
+            avatar = fbData.picture?.data?.url || avatar;
+          }
+        }
+      } catch (err) {
+        console.error('Lỗi kết nối xác thực Facebook Graph API:', err);
+      }
+    }
+
+    if (!facebookId && !email) {
+      throw new UnauthorizedException('Không thể xác thực thông tin tài khoản Facebook');
+    }
+
+    facebookId = facebookId || `fb_${Date.now()}`;
+    email = email || `facebook_${facebookId}@facebook.com`;
+    name = name || 'Facebook User';
 
     let user = await this.usersService.findByFacebookId(facebookId);
     if (!user) {
@@ -120,14 +201,25 @@ export class AuthService {
       user = await this.usersService.createOAuthUser({
         name,
         email,
-        avatar: dto.avatar,
+        avatar,
         facebookId,
         authProvider: 'facebook',
       });
     } else {
+      let updated = false;
       if (!user.facebookId) {
         user.facebookId = facebookId;
-        if (dto.avatar) user.avatar = dto.avatar;
+        updated = true;
+      }
+      if (avatar && !user.avatar) {
+        user.avatar = avatar;
+        updated = true;
+      }
+      if (name && (!user.name || user.name === 'User')) {
+        user.name = name;
+        updated = true;
+      }
+      if (updated) {
         await user.save();
       }
     }

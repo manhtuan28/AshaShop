@@ -199,9 +199,9 @@ export const initialSiteConfig: SiteConfig = {
   aboutImageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
 
   // 9. Contact Info & Support
-  hotline: '+84 987 654 321',
-  supportEmail: 'support@ashashop.com',
-  address: '111 Cầu Giấy, Quận Cầu Giấy, Hà Nội, Việt Nam',
+  hotline: '03 378 321 86',
+  supportEmail: 'contact@tuancute.com',
+  address: 'Số 16, Thanh Miếu, Phú Thọ',
   workingHours: '24/7 (Thứ 2 - Chủ Nhật)',
 
   // 10. Footer & Socials

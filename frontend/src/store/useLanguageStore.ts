@@ -23,7 +23,7 @@ export const useLanguageStore = create<LanguageState>()(
       t: (key: string) => {
         const lang = get().currentLanguage;
         const dict = translations[lang] || translations.vi;
-        return dict[key] || translations.en[key] || key;
+        return dict[key] || translations.vi[key] || translations.en[key] || key;
       },
     }),
     {

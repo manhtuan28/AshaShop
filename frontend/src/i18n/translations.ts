@@ -37,6 +37,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     // Home
     'home.hero.title': 'Bộ Sưu Tập Thời Trang\nMùa Hè Giảm 10%',
     'home.hero.shopNow': 'Khám Phá BST Mới',
+    'home.hero.browseAll': 'Xem Tất Cả Danh Mục',
     'home.cat.womansFashion': "Thời trang Nữ (Đầm, Váy)",
     'home.cat.mensFashion': "Thời trang Nam (Polo, Sơ mi)",
     'home.cat.jackets': 'Áo Khoác & Blazer',
@@ -279,6 +280,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     // Home
     'home.hero.title': 'Summer Fashion\nUp to 10% off Voucher',
     'home.hero.shopNow': 'Explore Collection',
+    'home.hero.browseAll': 'Browse All Categories',
     'home.cat.womansFashion': "Women's Fashion (Dresses)",
     'home.cat.mensFashion': "Men's Fashion (Polo, Shirts)",
     'home.cat.jackets': 'Jackets & Blazers',
@@ -521,6 +523,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     // Home
     'home.hero.title': '夏季高端女装与西装\n立享 10% 优惠券',
     'home.hero.shopNow': '探索最新系列',
+    'home.hero.browseAll': '浏览所有分类',
     'home.cat.womansFashion': '女装系列 (连衣裙/半身裙)',
     'home.cat.mensFashion': '男装系列 (Polo衫/衬衫)',
     'home.cat.jackets': '西装与外套',
@@ -763,6 +766,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     // Home
     'home.hero.title': '여름 패션 신상품\n최대 10% 할인 쿠폰',
     'home.hero.shopNow': '신상 컬렉션 보기',
+    'home.hero.browseAll': '모든 카테고리 보기',
     'home.cat.womansFashion': '여성 패션 (원피스, 스커트)',
     'home.cat.mensFashion': '남성 패션 (폴로, 셔츠)',
     'home.cat.jackets': '자켓 & 블레이저',
@@ -1005,6 +1009,7 @@ export const translations: Record<LanguageCode, Record<string, string>> = {
     // Home
     'home.hero.title': 'サマーコレクション\n最大10%OFFクーポン配布中',
     'home.hero.shopNow': '新作を見る',
+    'home.hero.browseAll': 'すべてのカテゴリを見る',
     'home.cat.womansFashion': 'レディース (ドレス/ワンピ)',
     'home.cat.mensFashion': 'メンズ (ポロシャツ/シャツ)',
     'home.cat.jackets': 'ジャケット＆アウター',

@@ -20,6 +20,18 @@ import {
 } from 'lucide-react';
 import { useLanguageStore } from '../../store/useLanguageStore';
 import { useSiteConfigStore } from '../../store/useSiteConfigStore';
+import {
+  VisaLogo,
+  MastercardLogo,
+  VnPayLogo,
+  MomoLogo,
+  ZaloPayLogo,
+  VietQrLogo,
+  CodLogo,
+  JcbLogo,
+  AppStoreBadge,
+  GooglePlayBadge
+} from '../common/PaymentLogos';
 
 export const Footer: React.FC = () => {
   const { currentLanguage, t } = useLanguageStore();
@@ -163,18 +175,18 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 text-xs text-neutral-400 pt-2">
               <p className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-exclusive-red flex-shrink-0 mt-0.5" />
-                <span>{config.address || '123 Nguyễn Trãi, Thanh Xuân, Hà Nội'}</span>
+                <span>{config.address || 'Số 16, Thanh Miếu, Phú Thọ'}</span>
               </p>
               <p className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-exclusive-red flex-shrink-0" />
-                <a href={`tel:${config.hotline || '0901234567'}`} className="hover:text-white transition-colors font-semibold">
-                  {config.hotline || '0901 234 567'}
+                <a href={`tel:${config.hotline || '0337832186'}`} className="hover:text-white transition-colors font-semibold">
+                  {config.hotline || '03 378 321 86'}
                 </a>
               </p>
               <p className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-exclusive-red flex-shrink-0" />
-                <a href={`mailto:${config.supportEmail || 'support@ashashop.com'}`} className="hover:text-white transition-colors">
-                  {config.supportEmail || 'support@ashashop.com'}
+                <a href={`mailto:${config.supportEmail || 'contact@tuancute.com'}`} className="hover:text-white transition-colors">
+                  {config.supportEmail || 'contact@tuancute.com'}
                 </a>
               </p>
             </div>
@@ -285,36 +297,48 @@ export const Footer: React.FC = () => {
           <div className="space-y-4">
             <h4 className="font-bold text-sm uppercase tracking-wider text-white">Phương Thức Thanh Toán</h4>
             
-            {/* Payment Method Badges */}
-            <div className="grid grid-cols-3 gap-2">
-              <span className="px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-[10px] font-bold text-center text-neutral-300">
-                COD
-              </span>
-              <span className="px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-[10px] font-bold text-center text-neutral-300">
-                MB BANK
-              </span>
-              <span className="px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-[10px] font-bold text-center text-neutral-300">
-                MOMO
-              </span>
-              <span className="px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-[10px] font-bold text-center text-neutral-300">
-                VNPAY
-              </span>
-              <span className="px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-[10px] font-bold text-center text-neutral-300">
-                VISA
-              </span>
-              <span className="px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-[10px] font-bold text-center text-neutral-300">
-                MASTER
-              </span>
+            {/* Payment Method Badges Grid */}
+            <div className="grid grid-cols-4 gap-2">
+              <div title="Thanh toán khi nhận hàng (COD)" className="h-9 bg-white rounded-lg p-1.5 flex items-center justify-center shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                <CodLogo className="h-4 w-auto max-w-full" />
+              </div>
+              <div title="Chuyển khoản VietQR / MB Bank" className="h-9 bg-white rounded-lg p-1.5 flex items-center justify-center shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                <VietQrLogo className="h-4 w-auto max-w-full" />
+              </div>
+              <div title="Cổng thanh toán VNPAY-QR" className="h-9 bg-white rounded-lg p-1 flex items-center justify-center shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                <VnPayLogo className="h-4 w-auto max-w-full" />
+              </div>
+              <div title="Ví điện tử MoMo" className="h-9 bg-white rounded-lg p-1.5 flex items-center justify-center shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                <MomoLogo className="h-5 w-auto max-w-full" />
+              </div>
+              <div title="Ví điện tử ZaloPay" className="h-9 bg-white rounded-lg p-1.5 flex items-center justify-center shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                <ZaloPayLogo className="h-4 w-auto max-w-full" />
+              </div>
+              <div title="Thẻ quốc tế Visa" className="h-9 bg-white rounded-lg p-1.5 flex items-center justify-center shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                <VisaLogo className="h-4 w-auto max-w-full" />
+              </div>
+              <div title="Thẻ quốc tế Mastercard" className="h-9 bg-white rounded-lg p-1.5 flex items-center justify-center shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                <MastercardLogo className="h-5 w-auto max-w-full" />
+              </div>
+              <div title="Thẻ quốc tế JCB" className="h-9 bg-white rounded-lg p-1.5 flex items-center justify-center shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                <JcbLogo className="h-4 w-auto max-w-full" />
+              </div>
             </div>
 
+            {/* Mobile App Download */}
             <div className="pt-2 space-y-2">
-              <span className="text-[11px] font-semibold text-neutral-400 block">Tải ứng dụng di động:</span>
+              <span className="text-[11px] font-semibold text-neutral-300 block">Trải nghiệm ứng dụng di động:</span>
               <div className="flex items-center gap-3">
-                <div className="bg-white p-1.5 rounded-xl flex-shrink-0">
-                  <QrCode className="w-12 h-12 text-black" />
+                <div className="bg-white p-1.5 rounded-xl flex-shrink-0 shadow-md">
+                  <QrCode className="w-11 h-11 text-black" />
                 </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-neutral-500 block">Quét mã QR để mua sắm tiện lợi trên iOS & Android</span>
+                <div className="flex flex-col gap-1.5">
+                  <a href="#app-store" className="hover:opacity-80 transition-opacity">
+                    <AppStoreBadge className="h-6 w-auto" />
+                  </a>
+                  <a href="#google-play" className="hover:opacity-80 transition-opacity">
+                    <GooglePlayBadge className="h-6 w-auto" />
+                  </a>
                 </div>
               </div>
             </div>

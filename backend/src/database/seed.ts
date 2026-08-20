@@ -1663,10 +1663,10 @@ async function seed() {
       aboutStory2: 'Chúng tôi cam kết từng sản phẩm đều được may từ chất liệu cao cấp, đường may tỉ mỉ và chuẩn form dáng giúp bạn tự tin tỏa sáng.',
       aboutImageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
 
-      hotline: '0901 234 567',
-      supportEmail: 'support@ashashop.com',
-      address: '123 Nguyễn Trãi, Thanh Xuân, Hà Nội',
-      workingHours: '8:00 - 22:00 (Thứ 2 - Chủ Nhật)',
+      hotline: '03 378 321 86',
+      supportEmail: 'contact@tuancute.com',
+      address: 'Số 16, Thanh Miếu, Phú Thọ',
+      workingHours: '24/7 (Thứ 2 - Chủ Nhật)',
 
       footerDescription: 'AshaShop - Thương hiệu thời trang cao cấp mang phong cách hiện đại, thanh lịch và tối giản đến với bạn.',
       footerAppDiscount: 'Tiết kiệm 10% cho đơn hàng đầu tiên qua app',

@@ -17,7 +17,6 @@ export const ForgotPassword: React.FC = () => {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
-  const [demoCode, setDemoCode] = useState<string | null>(null);
 
   // Handle Step 1: Request OTP
   const handleRequestOtp = async (e: React.FormEvent) => {
@@ -29,11 +28,7 @@ export const ForgotPassword: React.FC = () => {
     try {
       const res = await authApi.forgotPassword({ email });
       if (res.data.success) {
-        setSuccessMsg(res.data.message || 'Mã xác thực đã được gửi đến email của bạn.');
-        if ((res.data.data as any)?.resetCode) {
-          setDemoCode((res.data.data as any).resetCode);
-          setToken((res.data.data as any).resetCode); // Auto-fill for convenience
-        }
+        setSuccessMsg(res.data.message || 'Mã xác thực OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến.');
         setStep(2);
       }
     } catch (err: any) {
@@ -133,14 +128,6 @@ export const ForgotPassword: React.FC = () => {
             <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2 animate-fade-in">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
               <span>{successMsg}</span>
-            </div>
-          )}
-
-          {/* Dev/Demo Hint if available */}
-          {demoCode && step === 2 && (
-            <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs font-semibold flex items-center justify-between animate-fade-in">
-              <span>Mã OTP của bạn: <strong className="text-base text-amber-900 ml-1">{demoCode}</strong></span>
-              <span className="text-[10px] text-amber-600 bg-amber-100 px-2 py-0.5 rounded">Có hiệu lực 15 phút</span>
             </div>
           )}
 

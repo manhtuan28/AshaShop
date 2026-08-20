@@ -18,6 +18,7 @@ export enum PaymentMethod {
   BANK_TRANSFER = 'BANK_TRANSFER',
   VNPAY = 'VNPAY',
   MOMO = 'MOMO',
+  PAYPAL = 'PAYPAL',
 }
 
 export enum PaymentStatus {

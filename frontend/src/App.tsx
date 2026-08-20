@@ -23,6 +23,7 @@ import { TermsOfUse } from './pages/TermsOfUse';
 import { FAQ } from './pages/FAQ';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { MyReviews } from './pages/MyReviews';
+import { PaymentResult } from './pages/PaymentResult';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProducts } from './pages/admin/AdminProducts';
@@ -77,6 +78,10 @@ export const App: React.FC = () => {
           <Route path="register" element={<Register />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ForgotPassword />} />
+          <Route path="payment/result" element={<PaymentResult />} />
+          <Route path="payment/vnpay-return" element={<PaymentResult />} />
+          <Route path="payment/momo-return" element={<PaymentResult />} />
+          <Route path="payment/paypal-return" element={<PaymentResult />} />
 
           {/* User Protected Routes */}
           <Route element={<ProtectedRoute />}>

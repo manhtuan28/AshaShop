@@ -148,3 +148,17 @@ export const reviewsApi = {
   getPurchasedProducts: () => api.get<ApiResponse<PurchasedProductsResponse>>('/reviews/purchased-products'),
   getByProduct: (productId: string) => api.get<ApiResponse<Review[]>>(`/reviews/product/${productId}`),
 };
+
+export const paymentsApi = {
+  createPaymentUrl: (data: { orderId: string; returnUrl?: string }) =>
+    api.post<ApiResponse<{ paymentUrl: string; orderId: string; method: string }>>('/payments/create-url', data),
+  verifyPayment: (data: { method: string; params: Record<string, any> }) =>
+    api.post<ApiResponse<{ success: boolean; orderId: string; message: string; order?: any }>>('/payments/verify', data),
+  verifyVnpay: (params: Record<string, any>) =>
+    api.get<ApiResponse<{ success: boolean; orderId: string; message: string; order?: any }>>('/payments/vnpay-verify', { params }),
+  verifyMomo: (params: Record<string, any>) =>
+    api.get<ApiResponse<{ success: boolean; orderId: string; message: string; order?: any }>>('/payments/momo-verify', { params }),
+  verifyPaypal: (params: Record<string, any>) =>
+    api.get<ApiResponse<{ success: boolean; orderId: string; message: string; order?: any }>>('/payments/paypal-verify', { params }),
+};
+

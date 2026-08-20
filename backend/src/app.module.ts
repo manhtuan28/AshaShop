@@ -12,6 +12,7 @@ import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
     OrdersModule,
     SettingsModule,
     ReviewsModule,
+    PaymentsModule,
   ],
   providers: [
     {

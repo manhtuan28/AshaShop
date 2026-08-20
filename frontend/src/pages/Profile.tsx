@@ -42,28 +42,24 @@ export const Profile: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   // Address Book State
-  const [addresses, setAddresses] = useState<Array<{ id: string; name: string; phone: string; address: string; isDefault: boolean }>>([
-    {
-      id: '1',
-      name: user?.name || 'Khách hàng',
-      phone: user?.phone || '0987654321',
-      address: user?.address || '111 Cầu Giấy, Quận Cầu Giấy, Hà Nội',
-      isDefault: true,
-    },
-  ]);
+  const [addresses, setAddresses] = useState<Array<{ id: string; name: string; phone: string; address: string; isDefault: boolean }>>(
+    user?.address
+      ? [
+          {
+            id: '1',
+            name: user.name || 'Khách hàng',
+            phone: user.phone || '',
+            address: user.address,
+            isDefault: true,
+          },
+        ]
+      : []
+  );
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [newAddress, setNewAddress] = useState({ name: '', phone: '', address: '', isDefault: false });
 
   // Payment Options State
-  const [paymentCards, setPaymentCards] = useState<Array<{ id: string; cardHolder: string; cardNumber: string; expiry: string; isDefault: boolean }>>([
-    {
-      id: '1',
-      cardHolder: (user?.name || 'KHACH HANG').toUpperCase(),
-      cardNumber: '**** **** **** 8888',
-      expiry: '12/28',
-      isDefault: true,
-    },
-  ]);
+  const [paymentCards, setPaymentCards] = useState<Array<{ id: string; cardHolder: string; cardNumber: string; expiry: string; isDefault: boolean }>>([]);
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCard, setNewCard] = useState({ cardHolder: '', cardNumber: '', expiry: '', isDefault: false });
 
