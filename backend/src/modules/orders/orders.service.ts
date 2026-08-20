@@ -35,7 +35,11 @@ export class OrdersService {
     }> = [];
 
     if (dto.items && dto.items.length > 0) {
-      orderItemsToProcess = dto.items;
+      orderItemsToProcess = dto.items.map((it: any) => ({
+        productId: String(it.productId || it.product || (typeof it.product === 'object' ? it.product._id : '')),
+        quantity: it.quantity,
+        selectedAttributes: it.selectedAttributes,
+      }));
     } else {
       const cart = await this.cartModel.findOne({ user: userId });
       if (!cart || cart.items.length === 0) {

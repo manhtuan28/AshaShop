@@ -22,6 +22,7 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfUse } from './pages/TermsOfUse';
 import { FAQ } from './pages/FAQ';
 import { ForgotPassword } from './pages/ForgotPassword';
+import { MyReviews } from './pages/MyReviews';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProducts } from './pages/admin/AdminProducts';
@@ -82,6 +83,9 @@ export const App: React.FC = () => {
             <Route path="checkout" element={<Checkout />} />
             <Route path="order-success/:id" element={<OrderSuccess />} />
             <Route path="orders" element={<OrderHistory />} />
+            <Route path="cancellations" element={<OrderHistory defaultTab="CANCELLED" />} />
+            <Route path="my-reviews" element={<MyReviews />} />
+            <Route path="reviews" element={<MyReviews />} />
             <Route path="profile" element={<Profile />} />
           </Route>
         </Route>

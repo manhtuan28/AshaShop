@@ -39,10 +39,15 @@ export class ShippingAddressDto {
 }
 
 export class OrderItemInputDto {
-  @ApiProperty({ example: '6543210fedcba9876543210b' })
+  @ApiPropertyOptional({ example: '6543210fedcba9876543210b' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  productId: string;
+  productId?: string;
+
+  @ApiPropertyOptional({ example: '6543210fedcba9876543210b' })
+  @IsOptional()
+  @IsString()
+  product?: string;
 
   @ApiProperty({ example: 2 })
   @IsNumber()

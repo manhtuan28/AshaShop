@@ -279,12 +279,21 @@ export class ProductsService {
       const cat = await this.categoryModel.findById(dto.categoryId);
       if (!cat) throw new BadRequestException('Danh mục không hợp lệ');
       product.category = cat._id as any;
+      delete (dto as any).categoryId;
     }
 
     if (dto.name && !dto.slug) {
       product.slug = slugify(dto.name);
     } else if (dto.slug) {
       product.slug = slugify(dto.slug);
+    }
+
+    if (dto.attributes !== undefined) {
+      product.attributes = dto.attributes;
+    }
+
+    if (dto.stock !== undefined) {
+      product.stock = Number(dto.stock);
     }
 
     Object.assign(product, dto);

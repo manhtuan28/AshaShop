@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ApiResponse, Category, Order, PaginatedResult, Product, User } from '../types';
+import { ApiResponse, Category, Order, PaginatedResult, Product, User, Review, PurchasedProductsResponse } from '../types';
 
 // Dynamic API detection:
 // 1. If running on local machine (localhost / 127.0.0.1), connect to local backend container on port 5000
@@ -139,4 +139,12 @@ export const usersApi = {
 export const settingsApi = {
   getSettings: () => api.get<ApiResponse<any>>('/settings'),
   updateSettings: (data: any) => api.put<ApiResponse<any>>('/settings', data),
+};
+
+export const reviewsApi = {
+  create: (data: { productId: string; orderId?: string; rating: number; comment: string; images?: string[]; selectedAttributes?: any }) =>
+    api.post<ApiResponse<Review>>('/reviews', data),
+  getMyReviews: () => api.get<ApiResponse<Review[]>>('/reviews/my-reviews'),
+  getPurchasedProducts: () => api.get<ApiResponse<PurchasedProductsResponse>>('/reviews/purchased-products'),
+  getByProduct: (productId: string) => api.get<ApiResponse<Review[]>>(`/reviews/product/${productId}`),
 };

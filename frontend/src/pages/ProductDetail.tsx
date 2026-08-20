@@ -7,12 +7,18 @@ import {
   RotateCcw, 
   Minus, 
   Plus, 
-  Check 
+  Check,
+  MessageSquare,
+  Sparkles,
+  ShieldCheck,
+  User as UserIcon,
+  ChevronRight
 } from 'lucide-react';
-import { productsApi } from '../services/api';
-import { Product } from '../types';
+import { productsApi, reviewsApi } from '../services/api';
+import { Product, Review } from '../types';
 import { useCartStore } from '../store/useCartStore';
 import { useLanguageStore } from '../store/useLanguageStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { ProductCard } from '../components/common/ProductCard';
 import { translateProduct } from '../i18n/translator';
 
@@ -20,11 +26,14 @@ export const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { addItem } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
   const { currentLanguage, t } = useLanguageStore();
 
   const [rawProduct, setRawProduct] = useState<Product | null>(null);
   const product = rawProduct ? translateProduct(rawProduct, currentLanguage) : null;
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState<boolean>(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedColor, setSelectedColor] = useState<string>('#A0BCE0');
@@ -44,6 +53,9 @@ export const ProductDetail: React.FC = () => {
           setRawProduct(prodData);
           setSelectedImage(prodData.images?.[0] || '');
 
+          // Fetch reviews for this product
+          fetchReviews(prodData._id);
+
           // Fetch related products
           const relatedRes = await productsApi.getAll({ limit: 4 });
           setRelatedProducts(relatedRes.data.data.items.filter(p => p._id !== prodData._id).slice(0, 4));
@@ -58,22 +70,63 @@ export const ProductDetail: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [slug]);
 
+  const fetchReviews = async (productId: string) => {
+    try {
+      setLoadingReviews(true);
+      const res = await reviewsApi.getByProduct(productId);
+      if (res.data.success) {
+        setReviews(res.data.data || []);
+      }
+    } catch (err) {
+      console.error('Lỗi tải đánh giá sản phẩm:', err);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  // Dynamic Colors, Sizes & Material extraction
+  const rawColors = product?.attributes?.MauSac || product?.attributes?.color || product?.attributes?.colors || '';
+  const availableColors: string[] = typeof rawColors === 'string'
+    ? rawColors.split(',').map((c) => c.trim()).filter(Boolean)
+    : Array.isArray(rawColors) ? rawColors : [];
+
+  const rawSizes = product?.attributes?.Size || product?.attributes?.size || product?.attributes?.sizes || '';
+  const availableSizes: string[] = typeof rawSizes === 'string'
+    ? rawSizes.split(',').map((s) => s.trim()).filter(Boolean)
+    : Array.isArray(rawSizes) ? rawSizes : [];
+
+  const material = product?.attributes?.ChatLieu || product?.attributes?.material || '';
+
+  useEffect(() => {
+    if (rawProduct) {
+      const rawC = rawProduct.attributes?.MauSac || rawProduct.attributes?.color || '';
+      const cArr = typeof rawC === 'string' ? rawC.split(',').map(s => s.trim()).filter(Boolean) : [];
+      if (cArr.length > 0) setSelectedColor(cArr[0]);
+
+      const rawS = rawProduct.attributes?.Size || rawProduct.attributes?.size || '';
+      const sArr = typeof rawS === 'string' ? rawS.split(',').map(s => s.trim()).filter(Boolean) : [];
+      if (sArr.length > 0) setSelectedSize(sArr[0]);
+    }
+  }, [rawProduct]);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
 
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || (product.stock ?? 0) <= 0) return;
     addItem(product, quantity, { color: selectedColor, size: selectedSize });
     setBuySuccess(true);
     setTimeout(() => setBuySuccess(false), 2000);
   };
 
   const handleBuyNow = () => {
-    if (!product) return;
+    if (!product || (product.stock ?? 0) <= 0) return;
     addItem(product, quantity, { color: selectedColor, size: selectedSize });
     navigate('/checkout');
   };
+
+  const isOutOfStock = (product?.stock ?? 0) <= 0;
 
   if (loading) {
     return (
@@ -175,16 +228,31 @@ export const ProductDetail: React.FC = () => {
                 />
               ))}
             </div>
-            <span className="text-gray-500 font-medium">({product.numReviews || 150} {t('detail.reviews')})</span>
+            <span className="text-gray-500 font-medium">({reviews.length || product.numReviews || 0} {t('detail.reviews')})</span>
             <span className="text-gray-300">|</span>
-            <span className="text-exclusive-green font-semibold">
-              {product.stock > 0 ? t('detail.inStock') : t('detail.outOfStock')}
-            </span>
+            <div>
+              {product.stock > 10 ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Còn hàng ({product.stock} sản phẩm)
+                </span>
+              ) : product.stock > 0 ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                  Chỉ còn {product.stock} sản phẩm!
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 px-2.5 py-1 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                  Tạm hết hàng
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Price */}
           <div className="flex items-center gap-4">
-            <span className="text-2xl sm:text-3xl font-semibold text-black">
+            <span className="text-2xl sm:text-3xl font-extrabold text-exclusive-red tracking-tight">
               {formatCurrency(product.price)}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
@@ -192,65 +260,100 @@ export const ProductDetail: React.FC = () => {
                 {formatCurrency(product.originalPrice)}
               </span>
             )}
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="px-2 py-0.5 bg-red-100 text-exclusive-red text-xs font-bold rounded-md">
+                Tiết kiệm {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+              </span>
+            )}
           </div>
 
+          {/* Material */}
+          {material && (
+            <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
+              <span className="font-bold text-gray-800">Chất liệu:</span>
+              <span>{material}</span>
+            </div>
+          )}
+
           {/* Description */}
-          <p className="text-sm text-gray-700 leading-relaxed pb-4 border-b border-gray-200">
-            {product.description || 'Exclusive premium quality authentic merchandise.'}
+          <p className="text-sm text-gray-700 leading-relaxed pb-4 border-b border-gray-100">
+            {product.description || 'Sản phẩm thời trang cao cấp chính hãng từ AshaShop.'}
           </p>
 
           {/* Colours Selector */}
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-black">{t('detail.colours')}</span>
-            <div className="flex items-center gap-2">
-              {colors.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setSelectedColor(c)}
-                  style={{ backgroundColor: c }}
-                  className={`w-6 h-6 rounded-full border-2 transition-all ${
-                    selectedColor === c ? 'ring-2 ring-offset-2 ring-black border-white' : 'border-transparent'
-                  }`}
-                />
-              ))}
+          {availableColors.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-900">
+                  {t('detail.colours')}: <span className="text-exclusive-red font-semibold">{selectedColor}</span>
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {availableColors.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setSelectedColor(c)}
+                    className={`px-3 py-1.5 rounded-xl font-semibold text-xs border transition-all ${
+                      selectedColor === c
+                        ? 'bg-black text-white border-black shadow-sm ring-2 ring-black/10'
+                        : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    {selectedColor === c && '✓ '}
+                    {c}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Size Selector */}
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-black">{t('detail.size')}</span>
-            <div className="flex items-center gap-2">
-              {sizes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSelectedSize(s)}
-                  className={`w-9 h-9 rounded font-medium text-xs border transition-all ${
-                    selectedSize === s 
-                      ? 'bg-exclusive-red text-white border-exclusive-red' 
-                      : 'border-gray-300 text-black hover:border-black'
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
+          {availableSizes.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-900">
+                  {t('detail.size')}: <span className="text-exclusive-red font-semibold">{selectedSize}</span>
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {availableSizes.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSelectedSize(s)}
+                    className={`min-w-[40px] px-3 py-2 rounded-xl font-bold text-xs border transition-all text-center ${
+                      selectedSize === s 
+                        ? 'bg-exclusive-red text-white border-exclusive-red shadow-sm' 
+                        : 'bg-gray-50 border-gray-200 text-gray-800 hover:border-black'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Quantity Counter + Buy Now Button + Wishlist Heart */}
           <div className="flex items-center gap-4 pt-2">
             
             {/* Quantity Controller */}
-            <div className="flex items-center border border-gray-400 rounded overflow-hidden">
+            <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-gray-50">
               <button
+                type="button"
+                disabled={isOutOfStock || quantity <= 1}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 flex items-center justify-center hover:bg-exclusive-red hover:text-white transition-colors"
+                className="w-10 h-10 flex items-center justify-center hover:bg-black hover:text-white disabled:opacity-30 transition-colors"
               >
                 <Minus className="w-4 h-4" />
               </button>
-              <span className="w-12 text-center font-bold text-base">{quantity}</span>
+              <span className="w-12 text-center font-bold text-sm">{quantity}</span>
               <button
+                type="button"
+                disabled={isOutOfStock || quantity >= (product.stock ?? 10)}
                 onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 flex items-center justify-center bg-exclusive-red text-white hover:bg-exclusive-red-hover transition-colors"
+                className="w-10 h-10 flex items-center justify-center hover:bg-black hover:text-white disabled:opacity-30 transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -258,19 +361,22 @@ export const ProductDetail: React.FC = () => {
 
             {/* Buy Now Button */}
             <button
+              type="button"
+              disabled={isOutOfStock}
               onClick={handleBuyNow}
-              className="flex-1 py-2.5 px-6 bg-exclusive-red hover:bg-exclusive-red-hover text-white font-medium text-sm sm:text-base rounded transition-colors"
+              className="flex-1 py-3 px-6 bg-exclusive-red hover:bg-exclusive-red-hover disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-exclusive-red/20"
             >
-              {t('detail.buyNow')}
+              {isOutOfStock ? 'Hết hàng' : t('detail.buyNow')}
             </button>
 
             {/* Wishlist Heart */}
             <button
+              type="button"
               onClick={() => setIsWishlisted(!isWishlisted)}
-              className={`w-10 h-10 border border-gray-400 rounded flex items-center justify-center transition-colors ${
-                isWishlisted ? 'bg-exclusive-red text-white border-exclusive-red' : 'hover:border-black text-black'
+              className={`w-11 h-11 border border-gray-300 rounded-xl flex items-center justify-center transition-colors ${
+                isWishlisted ? 'bg-exclusive-red text-white border-exclusive-red' : 'hover:border-black text-black bg-white'
               }`}
-              title="Add to Wishlist"
+              title="Thêm vào danh sách yêu thích"
             >
               <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
             </button>
@@ -278,13 +384,19 @@ export const ProductDetail: React.FC = () => {
 
           {/* Add to Cart secondary button */}
           <button
+            type="button"
+            disabled={isOutOfStock}
             onClick={handleAddToCart}
-            className={`w-full py-3 border-2 border-black font-semibold text-sm rounded transition-all flex items-center justify-center gap-2 ${
-              buySuccess ? 'bg-exclusive-green text-black border-exclusive-green' : 'hover:bg-black hover:text-white'
+            className={`w-full py-3.5 border-2 border-black font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 ${
+              isOutOfStock
+                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                : buySuccess
+                ? 'bg-emerald-600 text-white border-emerald-600'
+                : 'hover:bg-black hover:text-white'
             }`}
           >
             {buySuccess ? <Check className="w-4 h-4" /> : null}
-            <span>{buySuccess ? t('card.added') : t('detail.addToCart')}</span>
+            <span>{isOutOfStock ? 'Sản phẩm tạm hết hàng' : buySuccess ? t('card.added') : t('detail.addToCart')}</span>
           </button>
 
           {/* Delivery & Return Accordion Box */}
@@ -317,6 +429,186 @@ export const ProductDetail: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Customer Reviews & Ratings Section */}
+      <section className="space-y-8 pt-8 border-t border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="section-badge mb-2">
+              <span>ĐÁNH GIÁ TỪ KHÁCH HÀNG</span>
+            </div>
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+              Nhận Xét & Trải Nghiệm Thực Tế ({reviews.length})
+            </h3>
+          </div>
+
+          <Link
+            to="/my-reviews"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-black hover:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-all shadow-sm self-start sm:self-auto"
+          >
+            <Star className="w-4 h-4 fill-current text-amber-400" />
+            <span>Đánh giá của tôi</span>
+          </Link>
+        </div>
+
+        {/* Rating Score Summary Box */}
+        <div className="bg-gray-50/80 rounded-2xl p-6 sm:p-8 border border-gray-200/80 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          
+          {/* Average Score */}
+          <div className="md:col-span-4 text-center md:border-r border-gray-200 md:pr-6 space-y-2">
+            <span className="text-5xl font-black text-gray-900 tracking-tight">
+              {product.rating ? Number(product.rating).toFixed(1) : '5.0'}
+            </span>
+            <div className="flex items-center justify-center gap-1 text-amber-400">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star
+                  key={s}
+                  className={`w-5 h-5 ${
+                    s <= Math.round(product.rating || 5) ? 'fill-current' : 'text-gray-200'
+                  }`}
+                />
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 font-medium">
+              Dựa trên {reviews.length || product.numReviews || 0} lượt đánh giá thực tế
+            </p>
+          </div>
+
+          {/* Star Distribution Breakdown */}
+          <div className="md:col-span-8 space-y-2">
+            {[5, 4, 3, 2, 1].map((starCount) => {
+              const matchingReviews = reviews.filter((r) => r.rating === starCount);
+              const percent = reviews.length > 0 ? (matchingReviews.length / reviews.length) * 100 : (starCount === 5 ? 85 : starCount === 4 ? 15 : 0);
+              return (
+                <div key={starCount} className="flex items-center gap-3 text-xs text-gray-600">
+                  <span className="w-12 font-medium flex items-center gap-1">
+                    {starCount} <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  </span>
+                  <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                  <span className="w-10 text-right text-gray-400 font-medium">{Math.round(percent)}%</span>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+
+        {/* Reviews List */}
+        {loadingReviews ? (
+          <div className="space-y-4">
+            {[1, 2].map((n) => (
+              <div key={n} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm animate-pulse space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-1/4" />
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+              </div>
+            ))}
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 space-y-3">
+            <MessageSquare className="w-10 h-10 text-gray-300 mx-auto" />
+            <h4 className="font-bold text-gray-800 text-base">Chưa có đánh giá nào cho sản phẩm này</h4>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+              Hãy là người đầu tiên trải nghiệm và chia sẻ cảm nhận về thiết kế này!
+            </p>
+            <Link
+              to="/my-reviews"
+              className="inline-block px-5 py-2 bg-exclusive-red hover:bg-exclusive-red-hover text-white text-xs font-semibold rounded-xl transition-colors"
+            >
+              Viết đánh giá ngay
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reviews.map((rev) => (
+              <div
+                key={rev._id}
+                className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-3 hover:border-gray-200 transition-colors"
+              >
+                {/* User Info & Rating */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {typeof rev.user === 'object' && rev.user?.avatar ? (
+                      <img
+                        src={rev.user.avatar}
+                        alt="Avatar"
+                        className="w-10 h-10 rounded-full object-cover border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm">
+                        {typeof rev.user === 'object' ? rev.user?.name?.charAt(0) || 'U' : 'U'}
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-gray-900">
+                          {typeof rev.user === 'object' ? rev.user?.name : 'Khách hàng AshaShop'}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" /> Đã mua hàng
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <div className="flex items-center gap-0.5 text-amber-400">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              className={`w-3.5 h-3.5 ${
+                                s <= rev.rating ? 'fill-current' : 'text-gray-200'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        {rev.selectedAttributes && Object.keys(rev.selectedAttributes).length > 0 && (
+                          <span className="text-xs text-gray-400">
+                            • Phân loại: {Object.values(rev.selectedAttributes).join(', ')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <span className="text-xs text-gray-400">
+                    {new Date(rev.createdAt).toLocaleDateString('vi-VN')}
+                  </span>
+                </div>
+
+                {/* Review Text */}
+                <p className="text-sm text-gray-700 leading-relaxed pl-13">
+                  {rev.comment}
+                </p>
+
+                {/* Review Photos */}
+                {rev.images && rev.images.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pl-13 pt-1">
+                    {rev.images.map((imgUrl, imgIdx) => (
+                      <a
+                        key={imgIdx}
+                        href={imgUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity"
+                      >
+                        <img
+                          src={imgUrl}
+                          alt="Feedback"
+                          className="w-full h-full object-cover"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+              </div>
+            ))}
+          </div>
+        )}
+
+      </section>
 
       {/* Related Items Section */}
       {relatedProducts.length > 0 && (

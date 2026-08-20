@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Building,
   ShieldCheck,
+  Star,
 } from 'lucide-react';
 import { ImageUpload } from '../components/common/ImageUpload';
 import toast from 'react-hot-toast';
@@ -231,8 +232,26 @@ export const Profile: React.FC = () => {
                   to="/orders"
                   className="flex items-center gap-2.5 px-4 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-black rounded-xl transition-all"
                 >
-                  <Package className="w-4 h-4" />
+                  <Package className="w-4 h-4 text-slate-500" />
                   <span>Đơn Hàng Của Tôi</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/cancellations"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all font-medium"
+                >
+                  <XCircle className="w-4 h-4 text-red-500" />
+                  <span>Đơn Hàng Đã Hủy</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/my-reviews"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-amber-600 hover:bg-amber-50 rounded-xl transition-all font-medium"
+                >
+                  <Star className="w-4 h-4 text-amber-500" />
+                  <span>Đánh Giá Của Tôi</span>
                 </Link>
               </li>
               <li>
@@ -240,7 +259,7 @@ export const Profile: React.FC = () => {
                   to="/wishlist"
                   className="flex items-center gap-2.5 px-4 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-black rounded-xl transition-all"
                 >
-                  <XCircle className="w-4 h-4 text-rose-500" />
+                  <Package className="w-4 h-4 text-rose-500" />
                   <span>Danh Sách Yêu Thích</span>
                 </Link>
               </li>

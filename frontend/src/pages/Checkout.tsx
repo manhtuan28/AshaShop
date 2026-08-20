@@ -56,14 +56,14 @@ export const Checkout: React.FC = () => {
       setError('');
 
       const orderPayload = {
-        items: items.map(i => ({
-          product: i.product._id,
-          name: i.product.name,
-          price: i.product.price,
-          quantity: i.quantity,
-          image: i.product.images?.[0],
-          selectedAttributes: i.selectedAttributes,
-        })),
+        items: items.map(i => {
+          const prodId = typeof i.product === 'object' ? i.product._id : i.product;
+          return {
+            productId: String(prodId),
+            quantity: Number(i.quantity),
+            selectedAttributes: i.selectedAttributes || {},
+          };
+        }),
         shippingAddress: {
           fullName: formData.firstName,
           phone: formData.phone,

@@ -102,3 +102,37 @@ export interface PaginatedResult<T> {
     totalPages: number;
   };
 }
+
+export interface Review {
+  _id: string;
+  user: User | { _id: string; name: string; avatar?: string };
+  product: Product | { _id: string; name: string; slug: string; images: string[]; price: number };
+  order?: string;
+  rating: number;
+  comment: string;
+  images?: string[];
+  selectedAttributes?: Record<string, any>;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface PurchasedProductItem {
+  orderId: string;
+  orderCreatedAt: string;
+  productId: string;
+  name: string;
+  image: string;
+  price: number;
+  quantity: number;
+  selectedAttributes?: Record<string, any>;
+  isReviewed: boolean;
+  review?: Review | null;
+}
+
+export interface PurchasedProductsResponse {
+  pending: PurchasedProductItem[];
+  reviewed: PurchasedProductItem[];
+  totalPending: number;
+  totalReviewed: number;
+}
+
