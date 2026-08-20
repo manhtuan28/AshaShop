@@ -412,25 +412,32 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ defaultTab }) => {
                       .map(([k, v]) => `${k}: ${v}`)
                       .join(', ');
 
+                    const prodId = typeof item.product === 'object' ? (item.product as any)?._id : item.product;
                     return (
                       <div key={idx} className="py-3 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3.5">
+                        <Link
+                          to={`/product/${prodId}`}
+                          className="flex items-center gap-3.5 group cursor-pointer"
+                          title="Xem chi tiết sản phẩm"
+                        >
                           <img
                             src={
                               item.image ||
                               'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=150&q=80'
                             }
                             alt={item.name}
-                            className="w-14 h-14 object-cover bg-slate-50 rounded-xl border border-slate-100 flex-shrink-0"
+                            className="w-14 h-14 object-cover bg-slate-50 rounded-xl border border-slate-100 flex-shrink-0 group-hover:scale-105 transition-transform"
                           />
                           <div className="space-y-0.5">
-                            <p className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1">{item.name}</p>
+                            <p className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-exclusive-red transition-colors line-clamp-1">
+                              {item.name}
+                            </p>
                             {attrString && (
                               <p className="text-[11px] text-slate-500 font-medium">Phân loại: {attrString}</p>
                             )}
                             <p className="text-xs text-slate-400">Số lượng: x{item.quantity}</p>
                           </div>
-                        </div>
+                        </Link>
 
                         <div className="text-right flex-shrink-0">
                           <span className="text-xs sm:text-sm font-extrabold text-slate-900 block">

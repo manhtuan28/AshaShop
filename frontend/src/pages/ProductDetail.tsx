@@ -47,8 +47,15 @@ export const ProductDetail: React.FC = () => {
       if (!slug) return;
       try {
         setLoading(true);
-        const res = await productsApi.getBySlug(slug);
-        if (res.data.success) {
+        let res: any = null;
+        try {
+          res = await productsApi.getBySlug(slug);
+        } catch {
+          // Fallback to getById if slug route fails
+          res = await productsApi.getById(slug);
+        }
+
+        if (res?.data?.success && res.data.data) {
           const prodData = res.data.data;
           setRawProduct(prodData);
           setSelectedImage(prodData.images?.[0] || '');

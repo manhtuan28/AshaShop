@@ -207,18 +207,35 @@ export const AdminOrders: React.FC = () => {
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2">
                 Danh sách sản phẩm
               </h4>
-              {selectedOrder.items.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3 pt-3 first:pt-0">
-                  <img src={item.image} alt={item.name} className="w-12 h-12 rounded-xl object-cover bg-gray-50" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-xs text-gray-900 truncate">{item.name}</p>
-                    <p className="text-[11px] text-gray-400">Số lượng: x{item.quantity}</p>
+              {selectedOrder.items.map((item, idx) => {
+                const prodId = typeof item.product === 'object' ? (item.product as any)?._id : item.product;
+                return (
+                  <div key={idx} className="flex items-center gap-3 pt-3 first:pt-0">
+                    <a
+                      href={`/product/${prodId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-3 flex-1 min-w-0 group"
+                      title="Xem chi tiết sản phẩm trên web"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 rounded-xl object-cover bg-gray-50 border border-gray-100 group-hover:scale-105 transition-transform"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-xs text-gray-900 group-hover:text-exclusive-red transition-colors truncate">
+                          {item.name}
+                        </p>
+                        <p className="text-[11px] text-gray-400">Số lượng: x{item.quantity}</p>
+                      </div>
+                    </a>
+                    <span className="text-xs font-bold text-emerald-600 flex-shrink-0">
+                      {formatPrice(item.price * item.quantity)}
+                    </span>
                   </div>
-                  <span className="text-xs font-bold text-emerald-600">
-                    {formatPrice(item.price * item.quantity)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex justify-between items-center text-base font-bold text-gray-900 pt-2 border-t border-gray-100">

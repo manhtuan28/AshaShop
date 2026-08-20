@@ -222,17 +222,21 @@ export const Checkout: React.FC = () => {
           {/* Order Items List */}
           <div className="space-y-4 max-h-72 overflow-y-auto pr-2">
             {items.map((item) => (
-              <div key={item.product._id} className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 min-w-0">
+              <div key={item.product._id} className="flex items-center justify-between gap-4 py-1">
+                <Link
+                  to={`/product/${item.product.slug || item.product._id}`}
+                  className="flex items-center gap-4 min-w-0 group cursor-pointer"
+                  title="Xem chi tiết sản phẩm"
+                >
                   <img
                     src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=100&q=80'}
                     alt={item.product.name}
-                    className="w-12 h-12 object-contain bg-exclusive-bg rounded p-1 flex-shrink-0"
+                    className="w-12 h-12 object-contain bg-exclusive-bg rounded p-1 flex-shrink-0 group-hover:scale-105 transition-transform"
                   />
-                  <span className="text-sm font-medium text-black truncate">
+                  <span className="text-sm font-medium text-black group-hover:text-exclusive-red transition-colors truncate">
                     {item.product.name} x {item.quantity}
                   </span>
-                </div>
+                </Link>
                 <span className="text-sm font-semibold text-black flex-shrink-0">
                   {formatCurrency(item.product.price * item.quantity)}
                 </span>

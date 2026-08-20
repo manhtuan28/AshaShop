@@ -299,11 +299,17 @@ export const MyReviews: React.FC = () => {
                   className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
                 >
                   <div className="flex items-start gap-4 sm:gap-6 flex-1">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-gray-100 flex-shrink-0"
-                    />
+                    <Link
+                      to={`/product/${typeof item.productId === 'object' ? (item.productId as any)._id : item.productId}`}
+                      className="flex-shrink-0"
+                      title="Xem chi tiết sản phẩm"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-gray-100 hover:scale-105 transition-transform"
+                      />
+                    </Link>
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-md flex items-center gap-1">
@@ -313,9 +319,13 @@ export const MyReviews: React.FC = () => {
                           Ngày mua: {formatDate(item.orderCreatedAt)}
                         </span>
                       </div>
-                      <h4 className="font-bold text-gray-900 text-sm sm:text-base line-clamp-2">
+                      <Link
+                        to={`/product/${typeof item.productId === 'object' ? (item.productId as any)._id : item.productId}`}
+                        className="font-bold text-gray-900 hover:text-exclusive-red transition-colors text-sm sm:text-base line-clamp-2 block"
+                        title="Xem chi tiết sản phẩm"
+                      >
                         {item.name}
-                      </h4>
+                      </Link>
                       {item.selectedAttributes && Object.keys(item.selectedAttributes).length > 0 && (
                         <div className="flex flex-wrap gap-2 pt-0.5">
                           {Object.entries(item.selectedAttributes).map(([k, v]) => (
@@ -365,6 +375,7 @@ export const MyReviews: React.FC = () => {
             <div className="space-y-5">
               {reviewedItems.map((item, idx) => {
                 const review = item.review;
+                const prodId = typeof item.productId === 'object' ? (item.productId as any)._id : item.productId;
                 return (
                   <div
                     key={`${item.orderId}_${idx}`}
@@ -373,15 +384,21 @@ export const MyReviews: React.FC = () => {
                     {/* Header Product Info */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-4">
                       <div className="flex items-center gap-4">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-xl border border-gray-100 flex-shrink-0"
-                        />
+                        <Link to={`/product/${prodId}`} className="flex-shrink-0" title="Xem chi tiết sản phẩm">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-16 h-16 object-cover rounded-xl border border-gray-100 hover:scale-105 transition-transform"
+                          />
+                        </Link>
                         <div className="space-y-1">
-                          <h4 className="font-bold text-gray-900 text-sm sm:text-base line-clamp-1">
+                          <Link
+                            to={`/product/${prodId}`}
+                            className="font-bold text-gray-900 hover:text-exclusive-red transition-colors text-sm sm:text-base line-clamp-1 block"
+                            title="Xem chi tiết sản phẩm"
+                          >
                             {item.name}
-                          </h4>
+                          </Link>
                           {item.selectedAttributes && Object.keys(item.selectedAttributes).length > 0 && (
                             <div className="flex flex-wrap gap-2 text-xs text-gray-500">
                               {Object.entries(item.selectedAttributes).map(([k, v]) => (

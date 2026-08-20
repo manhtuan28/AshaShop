@@ -83,11 +83,13 @@ export const Cart: React.FC = () => {
                 {/* Product Column */}
                 <div className="col-span-5 flex items-center gap-4 w-full">
                   <div className="relative flex-shrink-0">
-                    <img
-                      src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=200&q=80'}
-                      alt={item.product.name}
-                      className="w-14 h-14 object-contain bg-exclusive-bg rounded p-1"
-                    />
+                    <Link to={`/product/${item.product.slug || item.product._id}`}>
+                      <img
+                        src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=200&q=80'}
+                        alt={item.product.name}
+                        className="w-14 h-14 object-contain bg-exclusive-bg rounded p-1 hover:scale-105 transition-transform"
+                      />
+                    </Link>
                     <button
                       onClick={() => removeItem(item.product._id)}
                       title="Remove product"
@@ -99,12 +101,12 @@ export const Cart: React.FC = () => {
                   <div className="min-w-0">
                     <Link
                       to={`/product/${item.product.slug || item.product._id}`}
-                      className="text-sm font-medium text-black hover:text-exclusive-red transition-colors line-clamp-1"
+                      className="text-sm font-semibold text-black hover:text-exclusive-red transition-colors line-clamp-1"
                     >
                       {item.product.name}
                     </Link>
                     {item.selectedAttributes?.size && (
-                      <span className="text-xs text-gray-500">Size: {item.selectedAttributes.size}</span>
+                      <span className="text-xs text-gray-500 block">Size: {item.selectedAttributes.size}</span>
                     )}
                   </div>
                 </div>

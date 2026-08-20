@@ -245,11 +245,18 @@ export class ProductsService {
     return items;
   }
 
-  async findBySlug(slug: string): Promise<ProductDocument> {
-    const product = await this.productModel
-      .findOne({ slug })
+  async findBySlug(slugOrId: string): Promise<ProductDocument> {
+    let product = await this.productModel
+      .findOne({ slug: slugOrId })
       .populate('category')
       .exec();
+
+    if (!product && Types.ObjectId.isValid(slugOrId)) {
+      product = await this.productModel
+        .findById(slugOrId)
+        .populate('category')
+        .exec();
+    }
 
     if (!product) {
       throw new NotFoundException('Không tìm thấy sản phẩm');
@@ -257,11 +264,20 @@ export class ProductsService {
     return product;
   }
 
-  async findById(id: string): Promise<ProductDocument> {
-    const product = await this.productModel
-      .findById(id)
-      .populate('category')
-      .exec();
+  async findById(idOrSlug: string): Promise<ProductDocument> {
+    let product: ProductDocument | null = null;
+    if (Types.ObjectId.isValid(idOrSlug)) {
+      product = await this.productModel
+        .findById(idOrSlug)
+        .populate('category')
+        .exec();
+    }
+    if (!product) {
+      product = await this.productModel
+        .findOne({ slug: idOrSlug })
+        .populate('category')
+        .exec();
+    }
 
     if (!product) {
       throw new NotFoundException('Không tìm thấy sản phẩm');
