@@ -18,7 +18,6 @@ interface CartState {
   clearCart: () => void;
 }
 
-
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
